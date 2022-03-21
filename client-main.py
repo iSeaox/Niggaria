@@ -12,3 +12,4 @@ log = logger.Logger(sys.stdout)
 log.log("Initialisation...")
 
 client_obj = client.Client(("192.168.0.35", 20001), log)
+client_obj.start()
