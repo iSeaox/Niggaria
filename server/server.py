@@ -3,6 +3,7 @@ import time
 import json
 
 import server.packet.profile_transfert_packet as profile_transfert_packet
+import server.packet.player_transfert_packet as player_transfert_packet
 
 import security.profile_handler as profile_handler
 
@@ -51,12 +52,15 @@ class Server:
             if(data["type"] == "init_packet"):
                 self.__player_access = packet[1]
                 (ath, msg, profile) = profile_handler.use_profile(data["user"], data["password"])
-                raw_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
+                new_player_entity = player.Player(profile.uuid)
 
                 if(ath):
-                    self.__connected_players[profile.uuid] = {"access": packet[1], "entity": player.Player(profile)}
-                    print(self.__connected_players)
+                    self.__connected_players[profile.uuid] = {"access": packet[1], "entity": new_player_entity}
 
+                raw_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
+                self.__socket.sendto(str.encode(raw_packet), packet[1])
+
+                raw_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
                 self.__socket.sendto(str.encode(raw_packet), packet[1])
 
 

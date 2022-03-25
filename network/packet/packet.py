@@ -3,7 +3,7 @@ import time
 PACKET_CLIENT = "client"
 PACKET_SERVER = "server"
 
-authorized_type = (int, str, bool, list, dict, float)
+AUTHORIZED_TYPE = (int, str, bool, list, dict, float)
 
 class Packet:
     def __init__(self):
@@ -16,12 +16,12 @@ class Packet:
 
         json_dict = {}
         for key in self.__dict__.keys():
-            if(type(self.__dict__[key]) in authorized_type):
+            if(type(self.__dict__[key]) in AUTHORIZED_TYPE or self.__dict__[key] == None):
                 json_dict[key] = self.__dict__[key]
             else:
                 json_dict[key] = self.__dict__[key].serialize()
 
-        return str(json_dict).replace("'", '"').replace("True", "true").replace("False", "false")
+        return str(json_dict).replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
 
 
     def deserialize(self, json_dict: dict):

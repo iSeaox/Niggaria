@@ -15,7 +15,8 @@ class Client:
     def __init__(self, server_acces, logger):
         self.__run = False
         self.__fps = 10
-        self.__player = player.Player(None)
+        self.__player = None
+        self.__loading = True
         self.profile = None
 
         self.__actions_buffer = []
@@ -35,7 +36,7 @@ class Client:
         screen = pygame.display.set_mode((720, 480))
         pygame.display.set_caption("Niggaria")
 
-        packet_data = init_packet.InitPacket("admin", "admin").serialize()
+        packet_data = init_packet.InitPacket("pedro", "pedro").serialize()
         self.__socket.sendto(str.encode(packet_data), self.server_acces)
         self.net_listener.start()
 
@@ -55,10 +56,11 @@ class Client:
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 self.__run = False
-            elif(event.type == pygame.KEYDOWN):
-                if(event.key == 100):
-                    self.__actions_buffer.append((time.time_ns(), "R"))
-                    self.__socket.sendto(str.encode("MR,"+str(time.time_ns())), self.server_acces)
+            elif(not(self.__loading)):
+                if(event.type == pygame.KEYDOWN):
+                    if(event.key == 100):
+                        self.__actions_buffer.append((time.time_ns(), "R"))
+                        self.__socket.sendto(str.encode("MR,"+str(time.time_ns())), self.server_acces)
 
         # --------- PACKET HANDLING ---------
         if(len(self.buffer) > 0):
@@ -67,14 +69,17 @@ class Client:
         while(len(self.buffer) > 0):
             raw = self.buffer[0]
             packet = json.loads(raw[0].decode())
+
             if(packet["type"] == "profile_transfert_packet"):
                 if(packet["authorized"]):
                     self.profile = player_profile.deserialize(packet["profile"])
-                    print(self.profile)
-                    self.__player.profile = self.profile
                 else:
-                    logger.log(packet["message"], object="refused")
+                    self.logger.log(packet["message"], subject="refused")
                     self.__run = False
+
+            elif(packet["type"] == "player_transfert_packet"):
+                self.__player = player.Player().deserialize(packet["player"])
+                self.__loading = False
 
 
 
@@ -87,19 +92,21 @@ class Client:
             self.buffer = self.buffer[1:]
         # -------------------------------------
 
-        self.__player.predicted_x = self.__player.x
-        self.__player.predicted_y = self.__player.y
+        if(not(self.__loading)):
+            self.__player.predicted_x = self.__player.x
+            self.__player.predicted_y = self.__player.y
 
-        for action in self.__actions_buffer:
-            if(action[1] == "R"):
-                self.__player.predicted_x += 5
+            for action in self.__actions_buffer:
+                if(action[1] == "R"):
+                    self.__player.predicted_x += 5
 
     def render(self, screen):
-        screen.fill((0, 0, 0))
+        if(not(self.__loading)):
+            screen.fill((0, 0, 0))
 
-        s_player = pygame.Surface((50, 50))
-        s_player.fill((0xA0, 0xA0, 0xA0))
-        screen.blit(s_player, (self.__player.predicted_x, self.__player.predicted_y))
+            s_player = pygame.Surface((50, 50))
+            s_player.fill((0xA0, 0xA0, 0xA0))
+            screen.blit(s_player, (self.__player.predicted_x, self.__player.predicted_y))
 
     def get_socket(self):
         return self.__socket
