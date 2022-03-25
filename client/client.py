@@ -8,8 +8,11 @@ import network.net_listener as net_listener
 import entity.human.player as player
 
 import client.packet.init_packet as init_packet
+import client.packet.action_transfert_packet as action_transfert_packet
 
 import security.player_profile as player_profile
+
+import action.client.key_action as key_action
 
 class Client:
     def __init__(self, server_acces, logger):
@@ -59,8 +62,10 @@ class Client:
             elif(not(self.__loading)):
                 if(event.type == pygame.KEYDOWN):
                     if(event.key == 100):
-                        self.__actions_buffer.append((time.time_ns(), "R"))
-                        self.__socket.sendto(str.encode("MR,"+str(time.time_ns())), self.server_acces)
+                        new_action = key_action.KeyAction(key_action.KEY_RIGHT)
+                        self.__actions_buffer.append(new_action)
+                        raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                        self.__socket.sendto(str.encode(raw_packet), self.server_acces)
 
         # --------- PACKET HANDLING ---------
         if(len(self.buffer) > 0):
@@ -97,8 +102,9 @@ class Client:
             self.__player.predicted_y = self.__player.y
 
             for action in self.__actions_buffer:
-                if(action[1] == "R"):
-                    self.__player.predicted_x += 5
+                if(action.type == "key_action"):
+                    if(action.key == 100):
+                        self.__player.predicted_x += 5
 
     def render(self, screen):
         if(not(self.__loading)):

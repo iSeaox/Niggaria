@@ -1,11 +1,13 @@
 import time
 
+import utils.serializable as serializable
+
 PACKET_CLIENT = "client"
 PACKET_SERVER = "server"
 
 AUTHORIZED_TYPE = (int, str, bool, list, dict, float)
 
-class Packet:
+class Packet(serializable.Serializable):
     def __init__(self):
         self.side = None
         self.type = "AbstractPacket"
@@ -22,9 +24,3 @@ class Packet:
                 json_dict[key] = self.__dict__[key].serialize()
 
         return str(json_dict).replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")
-
-
-    def deserialize(self, json_dict: dict):
-        for key in json_dict.keys():
-            self.__dict__[key] = json_dict[key]
-        return self

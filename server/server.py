@@ -63,7 +63,9 @@ class Server:
                 raw_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
                 self.__socket.sendto(str.encode(raw_packet), packet[1])
 
-
+            elif(data["type"] == "action_transfert_packet"):
+                concerned_player = self.__connected_players[data["uuid"]]["entity"]
+                concerned_player.x += 5
             elif(data[0] == "MR"):
                 self.__player.x += 5
                 self.__socket.sendto(str.encode(str(self.__player.x) + "," + str(self.__player.y) + "," + data[1]), self.__player_access)

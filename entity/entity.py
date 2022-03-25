@@ -1,6 +1,6 @@
+import utils.serializable as serializable
 
-
-class Entity:
+class Entity(serializable.Serializable):
     def __init__(self):
         self.type = "abstract_entity"
 
@@ -9,11 +9,3 @@ class Entity:
 
         self.predicted_x = 0
         self.predicted_y = 0
-
-    def serialize(self):
-        return self.__dict__
-
-    def deserialize(self, json_dict: dict):
-        for key in json_dict.keys():
-            self.__dict__[key] = json_dict[key]
-        return self

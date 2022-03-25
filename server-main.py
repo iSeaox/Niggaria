@@ -4,7 +4,7 @@ import sys
 sys.path.insert(1, os.path.abspath("."))
 
 import server.server as server
-import logger.logger as logger
+import utils.logger as logger
 
 log = logger.Logger(sys.stdout)
 log.log("Initialisation...")
