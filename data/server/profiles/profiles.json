@@ -1,0 +1,19 @@
+{
+  "profiles": [
+    {
+      "user": "admin",
+      "uuid": "adcea008-2720-439b-ae64-704b3d6a31ee",
+      "password": "admin"
+    },
+    {
+      "user": "pedro",
+      "uuid": "1fb049e8-9dcd-4a14-bdd8-baf27d6be1ad",
+      "password": "pedro"
+    },
+    {
+      "user": "marco",
+      "uuid": "3d72fab5-5f54-4163-8663-154f329fef6d",
+      "password": "marco"
+    }
+  ]
+}

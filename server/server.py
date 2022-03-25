@@ -2,6 +2,10 @@ import socket
 import time
 import json
 
+import server.packet.profile_transfert_packet as profile_transfert_packet
+
+import security.profile_handler as profile_handler
+
 import network.net_listener as net_listener
 
 import entity.human.player as player
@@ -22,8 +26,8 @@ class Server:
         self.net_listener = net_listener.NetListener(self)
         self.net_listener.start()
 
-        self.__player = player.Player()
-        self.__player_access = None
+        self.__connected_players = {}
+
 
     def start(self):
         self.__run = True
@@ -46,6 +50,16 @@ class Server:
             data = json.loads(packet[0].decode())
             if(data["type"] == "init_packet"):
                 self.__player_access = packet[1]
+                (ath, msg, profile) = profile_handler.use_profile(data["user"], data["password"])
+                raw_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
+
+                if(ath):
+                    self.__connected_players[profile.uuid] = {"access": packet[1], "entity": player.Player(profile)}
+                    print(self.__connected_players)
+
+                self.__socket.sendto(str.encode(raw_packet), packet[1])
+
+
             elif(data[0] == "MR"):
                 self.__player.x += 5
                 self.__socket.sendto(str.encode(str(self.__player.x) + "," + str(self.__player.y) + "," + data[1]), self.__player_access)

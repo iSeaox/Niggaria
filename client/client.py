@@ -1,5 +1,6 @@
 import socket
 import time
+import json
 import pygame
 
 import network.net_listener as net_listener
@@ -8,11 +9,14 @@ import entity.human.player as player
 
 import client.packet.init_packet as init_packet
 
+import security.player_profile as player_profile
+
 class Client:
     def __init__(self, server_acces, logger):
         self.__run = False
         self.__fps = 10
-        self.__player = player.Player()
+        self.__player = player.Player(None)
+        self.profile = None
 
         self.__actions_buffer = []
 
@@ -56,18 +60,32 @@ class Client:
                     self.__actions_buffer.append((time.time_ns(), "R"))
                     self.__socket.sendto(str.encode("MR,"+str(time.time_ns())), self.server_acces)
 
+        # --------- PACKET HANDLING ---------
         if(len(self.buffer) > 0):
             print(self.buffer)
 
-        for packet in self.buffer:
-            data = packet[0].decode().split(",")
-            self.__player.x = int(data[0])
-            self.__player.y = int(data[1])
+        while(len(self.buffer) > 0):
+            raw = self.buffer[0]
+            packet = json.loads(raw[0].decode())
+            if(packet["type"] == "profile_transfert_packet"):
+                if(packet["authorized"]):
+                    self.profile = player_profile.deserialize(packet["profile"])
+                    print(self.profile)
+                    self.__player.profile = self.profile
+                else:
+                    logger.log(packet["message"], object="refused")
+                    self.__run = False
 
-            while(len(self.__actions_buffer) > 0 and self.__actions_buffer[0][0] <= int(data[2])):
-                self.__actions_buffer = self.__actions_buffer[1:]
 
-        self.buffer = self.buffer[1:]
+
+            # self.__player.x = int(data[0])
+            # self.__player.y = int(data[1])
+            #
+            # while(len(self.__actions_buffer) > 0 and self.__actions_buffer[0][0] <= int(data[2])):
+            #     self.__actions_buffer = self.__actions_buffer[1:]
+
+            self.buffer = self.buffer[1:]
+        # -------------------------------------
 
         self.__player.predicted_x = self.__player.x
         self.__player.predicted_y = self.__player.y
