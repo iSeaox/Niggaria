@@ -11,5 +11,5 @@ import client.client as client
 log = logger.Logger(sys.stdout)
 log.log("Initialisation...")
 
-client_obj = client.Client(("10.70.208.183", 20001), log)
+client_obj = client.Client(("10.70.210.46", 20001), log)
 client_obj.start()

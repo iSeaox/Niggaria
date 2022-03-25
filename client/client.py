@@ -6,6 +6,8 @@ import network.net_listener as net_listener
 
 import entity.human.player as player
 
+import client.packet.init_packet as init_packet
+
 class Client:
     def __init__(self, server_acces, logger):
         self.__run = False
@@ -29,7 +31,8 @@ class Client:
         screen = pygame.display.set_mode((720, 480))
         pygame.display.set_caption("Niggaria")
 
-        self.__socket.sendto(str.encode("HelloEvent"), self.server_acces)
+        packet_data = init_packet.InitPacket("admin", "admin").serialize()
+        self.__socket.sendto(str.encode(packet_data), self.server_acces)
         self.net_listener.start()
 
         while(self.__run):
@@ -55,7 +58,7 @@ class Client:
 
         if(len(self.buffer) > 0):
             print(self.buffer)
-            
+
         for packet in self.buffer:
             data = packet[0].decode().split(",")
             self.__player.x = int(data[0])

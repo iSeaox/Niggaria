@@ -1,5 +1,6 @@
 import socket
 import time
+import json
 
 import network.net_listener as net_listener
 
@@ -42,8 +43,8 @@ class Server:
 
         while(len(self.buffer) > 0):
             packet = self.buffer[0]
-            data = packet[0].decode().split(",")
-            if(packet[0] == b'HelloEvent'):
+            data = json.loads(packet[0].decode())
+            if(data["type"] == "init_packet"):
                 self.__player_access = packet[1]
             elif(data[0] == "MR"):
                 self.__player.x += 5
