@@ -4,6 +4,7 @@ import json
 
 import server.packet.profile_transfert_packet as profile_transfert_packet
 import server.packet.player_transfert_packet as player_transfert_packet
+import server.packet.entity_update_packet as entity_update_packet
 
 import security.profile_handler as profile_handler
 
@@ -66,9 +67,9 @@ class Server:
             elif(data["type"] == "action_transfert_packet"):
                 concerned_player = self.__connected_players[data["uuid"]]["entity"]
                 concerned_player.x += 5
-            elif(data[0] == "MR"):
-                self.__player.x += 5
-                self.__socket.sendto(str.encode(str(self.__player.x) + "," + str(self.__player.y) + "," + data[1]), self.__player_access)
+                raw_packet = entity_update_packet.EntityPositionUpdatePacket(concerned_player, data["timestamp"]).serialize()
+                time.sleep(0.5)
+                self.__socket.sendto(str.encode(raw_packet), packet[1])
 
             self.buffer = self.buffer[1:]
 

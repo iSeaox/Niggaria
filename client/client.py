@@ -86,13 +86,12 @@ class Client:
                 self.__player = player.Player().deserialize(packet["player"])
                 self.__loading = False
 
+            elif(packet["type"] == "entity_position_update_packet"):
+                self.__player.x = packet["new_x"]
+                self.__player.y = packet["new_y"]
 
-
-            # self.__player.x = int(data[0])
-            # self.__player.y = int(data[1])
-            #
-            # while(len(self.__actions_buffer) > 0 and self.__actions_buffer[0][0] <= int(data[2])):
-            #     self.__actions_buffer = self.__actions_buffer[1:]
+                while(len(self.__actions_buffer) > 0 and self.__actions_buffer[0].timestamp <= packet["trigger_timestamp"]):
+                    self.__actions_buffer = self.__actions_buffer[1:]
 
             self.buffer = self.buffer[1:]
         # -------------------------------------
@@ -103,7 +102,7 @@ class Client:
 
             for action in self.__actions_buffer:
                 if(action.type == "key_action"):
-                    if(action.key == 100):
+                    if(action.key == key_action.KEY_RIGHT):
                         self.__player.predicted_x += 5
 
     def render(self, screen):
