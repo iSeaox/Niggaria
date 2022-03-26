@@ -9,6 +9,8 @@ import entity.human.player as player
 
 import client.packet.init_packet as init_packet
 import client.packet.action_transfert_packet as action_transfert_packet
+import client.packet.quit_packet as quit_packet
+import client.render.entity_renderer as entity_renderer
 
 import security.player_profile as player_profile
 
@@ -55,6 +57,9 @@ class Client:
             if(waiting_time > 0):
                 time.sleep(waiting_time)
 
+        raw_packet = quit_packet.QuitPacket(self.profile).serialize()
+        self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
     def update(self):
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
@@ -84,13 +89,14 @@ class Client:
 
             elif(packet["type"] == "player_transfert_packet"):
                 self.__player = player.Player().deserialize(packet["player"])
+                self.logger.log("player entity received", subject="load")
                 self.__loading = False
 
             elif(packet["type"] == "entity_position_update_packet"):
                 self.__player.x = packet["new_x"]
                 self.__player.y = packet["new_y"]
 
-                while(len(self.__actions_buffer) > 0 and self.__actions_buffer[0].timestamp <= packet["trigger_timestamp"]):
+                while(len(self.__actions_buffer) > 0 and self.__actions_buffer[0].timestamp <= packet["action_timestamp"]):
                     self.__actions_buffer = self.__actions_buffer[1:]
 
             self.buffer = self.buffer[1:]
@@ -109,9 +115,7 @@ class Client:
         if(not(self.__loading)):
             screen.fill((0, 0, 0))
 
-            s_player = pygame.Surface((50, 50))
-            s_player.fill((0xA0, 0xA0, 0xA0))
-            screen.blit(s_player, (self.__player.predicted_x, self.__player.predicted_y))
+            entity_renderer.render_entity(screen, self.__player)
 
     def get_socket(self):
         return self.__socket
