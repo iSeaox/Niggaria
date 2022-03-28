@@ -10,17 +10,30 @@ import entity.human.player as player
 import client.packet.init_packet as init_packet
 import client.packet.action_transfert_packet as action_transfert_packet
 import client.packet.quit_packet as quit_packet
-import client.render.entity_renderer as entity_renderer
+import client.render.world_renderer as world_renderer
+import client.update.entity_updater as entity_updater
+import client.update.world_updater as world_updater
 
 import security.player_profile as player_profile
 
 import action.client.key_action as key_action
+import action.server.connection_action as connection_action
+import action.server.entity_move_action as entity_move_action
+
+import world.world as world
+
+CLIENT_FPS = 60
 
 class Client:
     def __init__(self, server_acces, logger):
         self.__run = False
-        self.__fps = 10
+        self.__fps = CLIENT_FPS
         self.__player = None
+        self.__world = None
+
+        self.__entity_updater = entity_updater.EntityUpdater()
+        self.__world_updater = world_updater.WorldUpdater(self.__entity_updater)
+
         self.__loading = True
         self.profile = None
 
@@ -41,7 +54,7 @@ class Client:
         screen = pygame.display.set_mode((720, 480))
         pygame.display.set_caption("Niggaria")
 
-        packet_data = init_packet.InitPacket("pedro", "pedro").serialize()
+        packet_data = init_packet.InitPacket("marco", "marco").serialize()
         self.__socket.sendto(str.encode(packet_data), self.server_acces)
         self.net_listener.start()
 
@@ -64,17 +77,17 @@ class Client:
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 self.__run = False
-            elif(not(self.__loading)):
-                if(event.type == pygame.KEYDOWN):
-                    if(event.key == 100):
-                        new_action = key_action.KeyAction(key_action.KEY_RIGHT)
-                        self.__actions_buffer.append(new_action)
-                        raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                        self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
+        if(not(self.__loading)):
+            if(pygame.key.get_pressed()[100]):
+                new_action = key_action.KeyAction(key_action.KEY_RIGHT)
+                self.__entity_updater.push_local_action(new_action)
+                raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                self.__socket.sendto(str.encode(raw_packet), self.server_acces)
 
         # --------- PACKET HANDLING ---------
-        if(len(self.buffer) > 0):
-            print(self.buffer)
+        # if(len(self.buffer) > 0):
+        #     print(self.buffer)
 
         while(len(self.buffer) > 0):
             raw = self.buffer[0]
@@ -90,32 +103,49 @@ class Client:
             elif(packet["type"] == "player_transfert_packet"):
                 self.__player = player.Player().deserialize(packet["player"])
                 self.logger.log("player entity received", subject="load")
+
+            elif(packet["type"] == "world_transfert_packet"):
+                self.__world = world.World().deserialize(packet["world"])
+                self.logger.log("world received", subject="load")
+
+                self.__world.set_local_player(self.__player)
+                self.__world_updater.local_player = self.__player
+                self.__entity_updater.local_player = self.__player
+                self.logger.log("world player linked with local player entity", subject="load")
                 self.__loading = False
 
-            elif(packet["type"] == "entity_position_update_packet"):
-                self.__player.x = packet["new_x"]
-                self.__player.y = packet["new_y"]
+            elif(packet["type"] == "action_transfert_packet"):
+                if(packet["action"]["type"] == "connection_action"):
+                    c_action = packet["action"]
+                    if(c_action["connection_type"] == connection_action.JOIN_SERVER):
+                        packet_player = player.Player().deserialize(c_action["player"])
+                        self.__world.add_player_entity(packet_player)
+                        self.logger.log(packet_player.name + " joined the game", subject="join")
 
-                while(len(self.__actions_buffer) > 0 and self.__actions_buffer[0].timestamp <= packet["action_timestamp"]):
-                    self.__actions_buffer = self.__actions_buffer[1:]
+                    elif(c_action["connection_type"] == connection_action.QUIT_SERVER):
+                        packet_player = player.Player().deserialize(c_action["player"])
+                        self.__world.remove_player_entity(packet_player)
+                        self.logger.log(packet_player.name + " left the game", subject="quit")
+
+                elif(packet["action"]["type"] == "entity_move_action"):
+                    em_action = entity_move_action.EntityMoveAction().deserialize(packet["action"])
+                    if(packet["ack"] == True):
+                        self.__entity_updater.push_local_action(em_action)
+                    else:
+                        self.__entity_updater.push_action(em_action.entity, em_action)
 
             self.buffer = self.buffer[1:]
         # -------------------------------------
 
         if(not(self.__loading)):
-            self.__player.predicted_x = self.__player.x
-            self.__player.predicted_y = self.__player.y
+            self.__world_updater.update(self.__world)
 
-            for action in self.__actions_buffer:
-                if(action.type == "key_action"):
-                    if(action.key == key_action.KEY_RIGHT):
-                        self.__player.predicted_x += 5
 
     def render(self, screen):
         if(not(self.__loading)):
             screen.fill((0, 0, 0))
 
-            entity_renderer.render_entity(screen, self.__player)
+            world_renderer.render_world(screen, self.__world)
 
     def get_socket(self):
         return self.__socket
