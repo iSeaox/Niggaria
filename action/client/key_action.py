@@ -1,6 +1,7 @@
 import action.action as action
 
 KEY_RIGHT = 0
+KEY_LEFT = 1
 
 class KeyAction(action.Action):
 

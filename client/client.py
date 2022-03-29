@@ -79,15 +79,20 @@ class Client:
                 self.__run = False
 
         if(not(self.__loading)):
+            new_action = None
             if(pygame.key.get_pressed()[100]):
                 new_action = key_action.KeyAction(key_action.KEY_RIGHT)
+            elif(pygame.key.get_pressed()[113]):
+                new_action = key_action.KeyAction(key_action.KEY_LEFT)
+
+            if(new_action != None):
                 self.__entity_updater.push_local_action(new_action)
                 raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                 self.__socket.sendto(str.encode(raw_packet), self.server_acces)
 
         # --------- PACKET HANDLING ---------
-        # if(len(self.buffer) > 0):
-        #     print(self.buffer)
+        if(len(self.buffer) > 0):
+            print(self.buffer)
 
         while(len(self.buffer) > 0):
             raw = self.buffer[0]

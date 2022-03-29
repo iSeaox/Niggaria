@@ -22,6 +22,8 @@ class EntityUpdater:
             if(action.type == "key_action"):
                 if(action.key == key_action.KEY_RIGHT):
                     self.local_player.predicted_x += 5
+                elif(action.key == key_action.KEY_LEFT):
+                    self.local_player.predicted_x -= 5
         # -------------------------------------------
         for entity_uid in entities.keys():
             if(entity_uid != self.local_player.instance_uid):

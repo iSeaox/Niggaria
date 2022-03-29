@@ -15,6 +15,7 @@ import entity.human.player as player
 
 import action.server.connection_action as connection_action
 import action.server.entity_move_action as entity_move_action
+import action.client.key_action as key_action
 
 import world.world as world
 
@@ -53,8 +54,8 @@ class Server:
                 time.sleep(waiting_time)
 
     def tick(self):
-        # if(len(self.buffer) > 0):
-        #     print(self.buffer)
+        if(len(self.buffer) > 0):
+            print(self.buffer)
 
         while(len(self.buffer) > 0):
             packet = self.buffer[0]
@@ -97,7 +98,12 @@ class Server:
 
             elif(data["type"] == "action_transfert_packet"):
                 concerned_player = self.__connected_players[data["uuid"]]["entity"]
-                concerned_player.x += 5
+                if(data["action"]["type"] == "key_action"):
+                    pressed_key = data["action"]["key"]
+                    if(pressed_key == key_action.KEY_RIGHT):
+                        concerned_player.x += 5
+                    elif(pressed_key == key_action.KEY_LEFT):
+                        concerned_player.x -= 5
 
                 em_action = entity_move_action.EntityMoveAction(concerned_player)
                 em_action.timestamp = data["timestamp"]
