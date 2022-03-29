@@ -63,12 +63,12 @@ class Server:
             if(data["type"] == "init_packet"):
                 self.__player_access = packet[1]
                 (ath, msg, profile) = profile_handler.use_profile(data["user"], data["password"])
-                new_player_entity = player.Player(profile.uuid, profile.user)
 
                 raw_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
                 self.__socket.sendto(str.encode(raw_packet), packet[1])
 
                 if(ath):
+                    new_player_entity = player.Player(profile.uuid, profile.user)
                     self.__connected_players[profile.uuid] = {"access": packet[1], "entity": new_player_entity}
                     self.server_world.add_player_entity(new_player_entity)
 

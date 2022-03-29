@@ -1,4 +1,5 @@
 import time
+import math
 
 import action.client.key_action as key_action
 
@@ -33,6 +34,7 @@ class EntityUpdater:
                 if(entity_uid in self.buffers.keys()):
                     interpolate_timestamp = time.time_ns() - TPS_TIME
                     working_buffer = self.buffers[entity_uid]
+                    beta = 1.5
                     previous_pos = ()
                     previous_timestamp = None
                     next_pos = ()
@@ -54,13 +56,18 @@ class EntityUpdater:
                         dist_x = (next_pos[0] - previous_pos[0])
                         delta_t = next_timestamp - previous_timestamp
 
-                        # delta_x = (interpolate_timestamp - previous_timestamp) * dist_x / delta_t
-                        delta_x = (next_pos[0] + previous_pos[0]) / 2
-                        concerned_entity.x = round(delta_x)
+                        delta_x = (interpolate_timestamp - previous_timestamp) * dist_x / delta_t
+                        if(delta_x < 0):
+                             delta_x -= beta
+                             concerned_entity.x += math.floor(delta_x)
+                        elif(delta_x > 0):
+                            delta_x += beta
+                            concerned_entity.x += math.ceil(delta_x)
                     elif(previous_pos != () and next_pos == ()):
                         concerned_entity.x = previous_pos[0]
 
-                    print(previous_pos, next_pos)
+                    if(previous_pos != () or next_pos != ()):
+                        print(previous_pos, next_pos)
 
                     while(len(self.buffers[entity_uid]) > 0 and time.time_ns() - self.buffers[entity_uid][0][0] > TPS_TIME * 4):
                         self.buffers[entity_uid] = self.buffers[entity_uid][1:]
