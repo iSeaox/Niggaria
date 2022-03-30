@@ -1,0 +1,12 @@
+{
+  "type": "strip/charset",
+  "file": "textures/text/FR_charset.png",
+  "format": {
+    "height": 32,
+    "width": 16
+  },
+  "charset": {
+    "lang": "FR",
+    "sequence": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789é:.?!,()-_"
+  }
+}

@@ -87,12 +87,15 @@ class Server:
                         if(player_info["entity"].instance_uid != new_player_entity.instance_uid):
                             self.__socket.sendto(str.encode(raw_packet), player_info["access"])
 
+                    self.logger.log(new_player_entity.name + " joined the game", subject="join")
+
             elif(data["type"] == "quit_packet"):
                 if(data["profile"]["uuid"] in self.__connected_players.keys()):
                     c_action = connection_action.ConnectionAction(self.__connected_players[data["profile"]["uuid"]]["entity"], connection_action.QUIT_SERVER)
 
                     self.server_world.remove_player_entity(self.__connected_players[data["profile"]["uuid"]]["entity"])
                     self.__connected_players.pop(data["profile"]["uuid"])
+                    self.logger.log(data["profile"]["user"] + " left the game", subject="quit")
                     raw_packet = action_transfert_packet.ActionTransfertPacket(c_action).serialize()
                     for player_info in self.__connected_players.values():
                         self.__socket.sendto(str.encode(raw_packet), player_info["access"])
