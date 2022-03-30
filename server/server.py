@@ -54,8 +54,10 @@ class Server:
                 time.sleep(waiting_time)
 
     def tick(self):
-        if(len(self.buffer) > 0):
-            print(self.buffer)
+        move_actions = {}
+
+        # if(len(self.buffer) > 0):
+        #     print(self.buffer)
 
         while(len(self.buffer) > 0):
             packet = self.buffer[0]
@@ -111,12 +113,15 @@ class Server:
                 self.__socket.sendto(str.encode(raw_packet), packet[1])
 
                 em_action.timestamp = time.time_ns()
-                raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
-                for other_player_uuid in self.__connected_players.keys():
-                    if(other_player_uuid != data["uuid"]):
-                        self.__socket.sendto(str.encode(raw_packet), self.__connected_players[other_player_uuid]["access"])
+                move_actions[em_action.entity.instance_uid] = (em_action, data["uuid"])
 
             self.buffer = self.buffer[1:]
+
+        for move_action in move_actions.values():
+            for other_player_uuid in self.__connected_players.keys():
+                if(other_player_uuid != move_action[1]):
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(move_action[0]).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.__connected_players[other_player_uuid]["access"])
 
 
 

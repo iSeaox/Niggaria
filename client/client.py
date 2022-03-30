@@ -54,7 +54,7 @@ class Client:
         screen = pygame.display.set_mode((720, 480))
         pygame.display.set_caption("Niggaria")
 
-        packet_data = init_packet.InitPacket("marco", "marco").serialize()
+        packet_data = init_packet.InitPacket("pedro", "pedro").serialize()
         self.__socket.sendto(str.encode(packet_data), self.server_acces)
         self.net_listener.start()
 
