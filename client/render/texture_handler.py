@@ -41,11 +41,20 @@ class TextureHandler:
                     strip.append(raw_image.subsurface(pygame.Rect((cursor, 0, info["format"]["width"], info["format"]["height"]))).copy())
                     self.loaded[info["name"]] = strip
                     self.logger.log(info["name"] + "loaded", subject="load")
-                    print(cursor)
                     cursor += info["format"]["width"]
 
             elif(t_type[1] == "charset"):
-                pass
+                sequence = info["charset"]["sequence"]
+                print(sequence)
+                strip = {}
+                cursor = 0
+                it = 0
+                while(cursor < len(sequence * info["format"]["width"])):
+                    strip[sequence[it]] = self.resize(raw_image.subsurface(pygame.Rect((cursor, 0, info["format"]["width"], info["format"]["height"]))).copy(), size_coef=2)
+                    self.loaded[info["name"]] = strip
+                    self.logger.log(info["name"] + "loaded", subject="load")
+                    cursor += info["format"]["width"]
+                    it += 1
 
 
     def get_texture(self, path, size_coef = 1):
@@ -55,29 +64,31 @@ class TextureHandler:
         if((path, size_coef) in self.loaded.keys()):
             return self.loaded[(path, size_coef)]
         else:
-            final_image = self.resize(pygame.image.load(path).convert_alpha(), size_coef)
+            raw_image = pygame.image.load(path).convert_alpha()
+            final_image = self.resize(raw_image, size_coef)
             self.loaded[(path, size_coef)] = final_image
             return final_image
 
     def resize(self, surface, size_coef):
-        if(size_coef == 1):
-            return surface
-
-        final_textures = pygame.Surface((surface.get_width() * size_coef, surface.get_height() * size_coef))
-
-        rt_buffer = surface.get_buffer()
-
-        temp_bytes = b''
-        current_line = b''
-        pixel_index = 0
-        while(pixel_index < rt_buffer.length / 4):
-            if(pixel_index % surface.get_width() == 0):
-                temp_bytes += current_line * size_coef
-                current_line = b''
-
-            current_pixel = rt_buffer.raw[(pixel_index * 4):(pixel_index * 4) + 4]
-            current_line += current_pixel * size_coef
-            pixel_index += 1
-
-        final_textures.get_buffer().write(temp_bytes)
-        return final_textures
+        return pygame.transform.scale(surface, (surface.get_width() * size_coef, surface.get_height() * size_coef))
+        # if(size_coef == 1):
+        #     return surface
+        #
+        # final_textures = pygame.Surface((surface.get_width() * size_coef, surface.get_height() * size_coef))
+        #
+        # rt_buffer = surface.get_buffer()
+        #
+        # temp_bytes = b''
+        # current_line = b''
+        # pixel_index = 0
+        # while(pixel_index < rt_buffer.length / 4):
+        #     if(pixel_index % surface.get_width() == 0):
+        #         temp_bytes += current_line * size_coef
+        #         current_line = b''
+        #
+        #     current_pixel = rt_buffer.raw[(pixel_index * 4):(pixel_index * 4) + 4]
+        #     current_line += current_pixel * size_coef
+        #     pixel_index += 1
+        #
+        # final_textures.get_buffer().write(temp_bytes)
+        # return final_textures

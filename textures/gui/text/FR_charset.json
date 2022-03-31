@@ -1,13 +1,13 @@
 {
-  "type": "simple/charset",
+  "type": "strip/charset",
   "file": "textures/gui/text/FR_charset.png",
   "name": "gui.text.FR_charset",
   "format": {
-    "height": 32,
-    "width": 16
+    "height": 7,
+    "width": 5
   },
   "charset": {
     "lang": "FR",
-    "sequence": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789é:.?!,()-_"
+    "sequence": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   }
 }
