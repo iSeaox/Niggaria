@@ -10,6 +10,7 @@ import client.gui.clickable.text_field as text_field
 import client.gui.text_renderer as text_renderer
 
 import security.player_profile as player_profile
+import security.profile_handler as profile_handler
 
 import world.world as world
 
@@ -23,17 +24,16 @@ class Launcher:
         self.abort = False
         self.logger = self.client.logger
 
-        self.test = gui_button.Button(10, 10, self.trigger_button, label = "Jouer", padding_top = 10, padding_side = 20)
+        self.valid_button = gui_button.Button(10, 10, self.trigger_button, label = "Jouer", padding_top = 10, padding_side = 20)
         self.t_field = text_field.TextField(50, 50, 200, 30, placeholder="Username")
         self.t_field_pass = text_field.TextField(50, 100, 200, 30, placeholder="Password", password = True)
+
+        self.waiting_response = False
+        self.server_response = None
 
     def start(self, screen):
         self.__screen = screen
         self.is_active = True
-
-        # packet_data = init_packet.InitPacket("marco", "marco").serialize()
-        # self.client.get_socket().sendto(str.encode(packet_data), self.client.server_acces)
-        # self.client.net_listener.start()
 
         while(self.is_active):
             begin = time.time_ns() / 1_000_000_000
@@ -65,8 +65,8 @@ class Launcher:
                     self.client.profile = player_profile.deserialize(packet["profile"])
                 else:
                     self.logger.log(packet["message"], subject="refused")
-                    self.abort = True
-                    self.is_active = False
+                    self.server_response = packet["message"]
+                    self.waiting_response = False
 
             elif(packet["type"] == "player_transfert_packet"):
                 self.client.set_player(player.Player().deserialize(packet["player"]))
@@ -86,7 +86,7 @@ class Launcher:
             self.client.buffer = self.client.buffer[1:]
         # -----------------------------
 
-        self.test.check()
+        self.valid_button.check()
         self.t_field.check()
         self.t_field_pass.check()
 
@@ -94,15 +94,30 @@ class Launcher:
         self.__screen.fill((0, 0, 0))
 
         self.__screen.blit(self.client.texture_handler.loaded["gui.launcher.loading.loading_tree"][5], (256, 256))
-        self.__screen.blit(self.test.render(self.client.texture_handler), (self.test.x, self.test.y))
+        s_valid_button = self.valid_button.render(self.client.texture_handler)
+        if(self.waiting_response):
+            s_valid_button.set_alpha(100)
+        self.__screen.blit(s_valid_button, (self.valid_button.x, self.valid_button.y))
         self.__screen.blit(self.t_field.render(self.client.texture_handler), (self.t_field.x, self.t_field.y))
         self.__screen.blit(self.t_field_pass.render(self.client.texture_handler), (self.t_field_pass.x, self.t_field_pass.y))
 
-        s_cross = self.client.texture_handler.get_texture("gui.launcher.icons.red_cross")
-        self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef = 2), (300, 100))
 
-        s_mark = self.client.texture_handler.get_texture("gui.launcher.icons.check_mark")
-        self.__screen.blit(self.client.texture_handler.resize(s_mark, size_coef = 2), (300, 80))
+        if(self.server_response != None):
+            resp_code = self.server_response.split(":")[0]
+            if(resp_code == profile_handler.WRONG_PASSWORD_CODE):
+                s_cross = self.client.texture_handler.get_texture("gui.launcher.icons.red_cross")
+                self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef = 2), (self.t_field_pass.x + self.t_field_pass.width + 10, self.t_field_pass.y + 3))
+
+            elif(resp_code == profile_handler.PROFILE_NOT_FOUND_CODE):
+                s_cross = self.client.texture_handler.get_texture("gui.launcher.icons.red_cross")
+                self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef = 2), (self.t_field.x + self.t_field.width + 10, self.t_field.y + 3))
 
     def trigger_button(self, click_type):
-        print(click_type)
+        if(not(self.waiting_response)):
+            self.waiting_response = True
+
+            packet_data = init_packet.InitPacket(self.t_field.content, self.t_field_pass.content).serialize()
+            self.client.get_socket().sendto(str.encode(packet_data), self.client.server_acces)
+
+            if(not(self.client.net_listener.is_start)):
+                self.client.net_listener.start()

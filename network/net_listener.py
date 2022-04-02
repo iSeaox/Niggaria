@@ -5,8 +5,10 @@ class NetListener(threading.Thread):
         threading.Thread.__init__(self, name="net-listener", daemon=True)
         self.__handler = handler
         self.__listen = True
+        self.is_start = False
 
     def run(self):
+        self.is_start = True
         self.__handler.logger.log("Listening...")
         while(self.__listen):
             received_packet = self.__handler.get_socket().recvfrom(self.__handler.get_net_buffer_size())
