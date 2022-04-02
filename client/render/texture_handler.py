@@ -23,7 +23,7 @@ class TextureHandler:
 
             elif(file.split(".")[1] == "json"):
                 textures_info = {}
-                with open(path + file, "r") as json_file:
+                with open(path + file, "r", encoding="UTF-8") as json_file:
                     textures_info = json.load(json_file)
                     self.__load(textures_info)
 
@@ -32,7 +32,7 @@ class TextureHandler:
         raw_image = pygame.image.load(info["file"]).convert_alpha()
         if(t_type[0] == "simple"):
             self.loaded[info["name"]] = raw_image.copy()
-            self.logger.log(info["name"] + "loaded", subject="load")
+            self.logger.log(info["name"] + " loaded", subject="load")
         elif(t_type[0] == "strip"):
             if(t_type[1] == "textures"):
                 strip = []
@@ -40,34 +40,49 @@ class TextureHandler:
                 while(cursor < raw_image.get_width()):
                     strip.append(raw_image.subsurface(pygame.Rect((cursor, 0, info["format"]["width"], info["format"]["height"]))).copy())
                     self.loaded[info["name"]] = strip
-                    self.logger.log(info["name"] + "loaded", subject="load")
+                    self.logger.log(info["name"] + " loaded", subject="load")
                     cursor += info["format"]["width"]
 
-            elif(t_type[1] == "charset"):
-                sequence = info["charset"]["sequence"]
-                print(sequence)
-                strip = {}
-                cursor = 0
-                it = 0
-                while(cursor < len(sequence * info["format"]["width"])):
-                    strip[sequence[it]] = self.resize(raw_image.subsurface(pygame.Rect((cursor, 0, info["format"]["width"], info["format"]["height"]))).copy(), size_coef=2)
-                    self.loaded[info["name"]] = strip
-                    self.logger.log(info["name"] + "loaded", subject="load")
-                    cursor += info["format"]["width"]
-                    it += 1
+        elif(t_type[0] == "sheet"):
+            if(t_type[1] == "charset"):
+                self.__load_sheet_charset(info, raw_image)
+
+            elif(t_type[1] == "gui"):
+                self.__load_sheet_gui(info, raw_image)
+
+    def __load_sheet_gui(self, info, raw_image):
+        items = info["sheet"]["items"]
+
+        for item in items:
+            new_sur = raw_image.subsurface(pygame.Rect((item["x"], item["y"], item["width"], item["height"])))
+            self.loaded[info["name"] + "." + item["name"]] = new_sur
+            self.logger.log(info["name"] + "." + item["name"] + " loaded", subject="load")
+
+    def __load_sheet_charset(self, info, raw_image):
+        orga = info["charset"]["organisation"]
+
+        new_entries = {}
+        cursor_y = 0
+        for line in orga:
+            cursor_x = 0
+            it = 0
+
+            while(cursor_x < len(line["sequence"] * line["width"])):
+                concerned_area = pygame.Rect((cursor_x, cursor_y, line["width"], line["height"]))
+                new_entries[line["sequence"][it]] = self.resize(raw_image.subsurface(concerned_area).copy(), size_coef = 2)
+                cursor_x += line["width"]
+                it += 1
+            cursor_y += line["height"]
+
+        self.loaded[info["name"]] = new_entries
+        self.logger.log(info["name"] + " loaded", subject="load")
 
 
-    def get_texture(self, path, size_coef = 1):
-        if(type(size_coef) != int):
-            raise TypeError("size_coef has to be an integer")
-
-        if((path, size_coef) in self.loaded.keys()):
-            return self.loaded[(path, size_coef)]
+    def get_texture(self, texture_path):
+        if(texture_path in self.loaded.keys()):
+            return self.loaded[texture_path]
         else:
-            raw_image = pygame.image.load(path).convert_alpha()
-            final_image = self.resize(raw_image, size_coef)
-            self.loaded[(path, size_coef)] = final_image
-            return final_image
+            raise KeyError("Cette texture n'existe pas : " + texture_path)
 
     def resize(self, surface, size_coef):
         return pygame.transform.scale(surface, (surface.get_width() * size_coef, surface.get_height() * size_coef))

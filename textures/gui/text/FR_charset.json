@@ -1,13 +1,49 @@
 {
-  "type": "strip/charset",
+  "type": "sheet/charset",
   "file": "textures/gui/text/FR_charset.png",
   "name": "gui.text.FR_charset",
-  "format": {
-    "height": 7,
-    "width": 5
-  },
   "charset": {
     "lang": "FR",
-    "sequence": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "organisation": [{
+      "height": 7,
+      "width": 5,
+      "sequence": "ABCDEFGHJKLMNOPQRSTUVWXYZ023456789mwv?@"
+    },
+    {
+      "height": 7,
+      "width": 3,
+      "sequence": "I1f"
+    },
+    {
+        "height": 7,
+        "width": 4,
+        "sequence": "abcdehknorstuxz\"àéè"
+    },
+    {
+        "height": 10,
+        "width": 4,
+        "sequence": "gpqy/\\_{}"
+    },
+    {
+        "height": 7,
+        "width": 2,
+        "sequence": "l"
+    },
+    {
+        "height": 10,
+        "width": 2,
+        "sequence": "j(),;"
+    },
+    {
+        "height": 7,
+        "width": 1,
+        "sequence": "i!.:"
+    }
+    ,
+    {
+        "height": 7,
+        "width": 3,
+        "sequence": "-=+*<>"
+    }]
   }
 }

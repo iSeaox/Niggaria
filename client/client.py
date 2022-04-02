@@ -57,7 +57,7 @@ class Client:
         self.__run = True
 
         pygame.init()
-        screen = pygame.display.set_mode((960, 720))
+        screen = pygame.display.set_mode((1080, 720))
         pygame.display.set_caption("Niggaria")
 
         self.texture_handler.load_textures(part="gui")

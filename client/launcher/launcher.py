@@ -6,6 +6,8 @@ import entity.human.player as player
 
 import client.packet.init_packet as init_packet
 import client.gui.clickable.button as gui_button
+import client.gui.clickable.text_field as text_field
+import client.gui.text_renderer as text_renderer
 
 import security.player_profile as player_profile
 
@@ -16,12 +18,14 @@ class Launcher:
     def __init__(self, client, screen = None):
         self.client = client
         self.__screen = screen
-        self.__fps = 10
+        self.__fps = 30
         self.is_active = False
         self.abort = False
         self.logger = self.client.logger
 
-        self.test = gui_button.Button(10, 10, 80, 80, self.trigger_button)
+        self.test = gui_button.Button(10, 10, self.trigger_button, label = "Jouer", padding_top = 10, padding_side = 20)
+        self.t_field = text_field.TextField(50, 50, 200, 30, placeholder="Username")
+        self.t_field_pass = text_field.TextField(50, 100, 200, 30, placeholder="Password", password = True)
 
     def start(self, screen):
         self.__screen = screen
@@ -47,6 +51,9 @@ class Launcher:
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 self.is_active = False
+            elif(event.type == pygame.KEYDOWN):
+                self.t_field.trigger_key_down_event(event)
+                self.t_field_pass.trigger_key_down_event(event)
 
         # ----- PACKET HANDLING -------
         while(len(self.client.buffer) > 0):
@@ -80,30 +87,22 @@ class Launcher:
         # -----------------------------
 
         self.test.check()
+        self.t_field.check()
+        self.t_field_pass.check()
 
     def render(self):
-        # self.__screen.blit(self.test.render(), (self.test.x, self.test.y))
-        #self.__screen.blit(self.client.texture_handler.get_texture("textures/gui/launcher/loading/loading_tree_6.png", size_coef = 4), (0, 0))
         self.__screen.fill((0, 0, 0))
+
         self.__screen.blit(self.client.texture_handler.loaded["gui.launcher.loading.loading_tree"][5], (256, 256))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["A"], (200, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["B"], (211, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["C"], (222, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["D"], (233, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["E"], (244, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["F"], (255, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["G"], (266, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["H"], (277, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["I"], (288, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["J"], (299, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["K"], (310, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["L"], (321, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["M"], (332, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["N"], (343, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["O"], (354, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["P"], (365, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["Q"], (376, 100))
-        self.__screen.blit(self.client.texture_handler.loaded["gui.text.FR_charset"]["R"], (387, 100))
+        self.__screen.blit(self.test.render(self.client.texture_handler), (self.test.x, self.test.y))
+        self.__screen.blit(self.t_field.render(self.client.texture_handler), (self.t_field.x, self.t_field.y))
+        self.__screen.blit(self.t_field_pass.render(self.client.texture_handler), (self.t_field_pass.x, self.t_field_pass.y))
+
+        s_cross = self.client.texture_handler.get_texture("gui.launcher.icons.red_cross")
+        self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef = 2), (300, 100))
+
+        s_mark = self.client.texture_handler.get_texture("gui.launcher.icons.check_mark")
+        self.__screen.blit(self.client.texture_handler.resize(s_mark, size_coef = 2), (300, 80))
 
     def trigger_button(self, click_type):
         print(click_type)

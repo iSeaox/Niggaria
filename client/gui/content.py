@@ -6,5 +6,5 @@ class Content:
         self.width = width
         self.height = height
 
-    def render(self):
+    def render(self, texture_handler):
         raise NotImplementedError("render() has to be implemented in subclasses")

@@ -1,0 +1,23 @@
+{
+  "type": "sheet/gui",
+  "file": "textures/gui/launcher/icons.png",
+  "name": "gui.launcher.icons",
+  "sheet": {
+    "items": [
+      {
+        "name": "red_cross",
+        "x": 0,
+        "y": 0,
+        "width": 9,
+        "height": 9
+      },
+      {
+        "name": "check_mark",
+        "x": 9,
+        "y": 0,
+        "width": 9,
+        "height": 9
+      }
+    ]
+  }
+}
