@@ -65,6 +65,8 @@ class Server:
             if(data["type"] == "init_packet"):
                 self.__player_access = packet[1]
                 (ath, msg, profile) = profile_handler.use_profile(data["user"], data["password"])
+                if(ath and (profile.uuid in self.__connected_players.keys())):
+                    (ath, msg, profile) = (False, profile_handler.ALREADY_CONNECTED_CODE+ "already connected", None)
 
                 raw_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
                 self.__socket.sendto(str.encode(raw_packet), packet[1])

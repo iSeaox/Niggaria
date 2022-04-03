@@ -5,6 +5,7 @@ import pygame
 
 import network.net_listener as net_listener
 
+import entity.human.player as player
 
 import client.packet.action_transfert_packet as action_transfert_packet
 import client.packet.quit_packet as quit_packet
@@ -72,6 +73,7 @@ class Client:
 
             elapsed = (time.time_ns() / 1_000_000_000 - begin)
             waiting_time = (1 / self.__fps) - elapsed
+            print(waiting_time)
             if(waiting_time > 0):
                 time.sleep(waiting_time)
 

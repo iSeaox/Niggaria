@@ -6,6 +6,7 @@ __FILE_PROFILES_PATH = r".\data\server\profiles\profiles.json"
 
 PROFILE_NOT_FOUND_CODE = "001"
 WRONG_PASSWORD_CODE = "002"
+ALREADY_CONNECTED_CODE = "003"
 
 def use_profile(user, password):
     for profile in __get_profiles():

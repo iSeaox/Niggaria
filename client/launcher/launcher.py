@@ -6,6 +6,7 @@ import entity.human.player as player
 
 import client.packet.init_packet as init_packet
 import client.gui.clickable.button as gui_button
+import client.gui.clickable.clickable as clickable
 import client.gui.clickable.text_field as text_field
 import client.gui.text_renderer as text_renderer
 
@@ -27,6 +28,10 @@ class Launcher:
         self.valid_button = gui_button.Button(10, 10, self.trigger_button, label = "Jouer", padding_top = 10, padding_side = 20)
         self.t_field = text_field.TextField(50, 50, 200, 30, placeholder="Username")
         self.t_field_pass = text_field.TextField(50, 100, 200, 30, placeholder="Password", password = True)
+
+        self.text_fields = []
+        self.text_fields.append(self.t_field)
+        self.text_fields.append(self.t_field_pass)
 
         self.waiting_response = False
         self.server_response = None
@@ -54,6 +59,17 @@ class Launcher:
             elif(event.type == pygame.KEYDOWN):
                 self.t_field.trigger_key_down_event(event)
                 self.t_field_pass.trigger_key_down_event(event)
+
+                if(event.key == 13): # ENTER
+                    self.valid_button.click(clickable.RIGHT_CLICK)
+                elif(event.key == 9): # TAB
+                    focused_id = None
+                    for i in range(len(self.text_fields)):
+                        if(self.text_fields[i].is_focus):
+                            focused_id = i
+                    if(focused_id != None):
+                        self.text_fields[focused_id].is_focus = False
+                        self.text_fields[(focused_id + 1) % len(self.text_fields)].is_focus = True
 
         # ----- PACKET HANDLING -------
         while(len(self.client.buffer) > 0):
@@ -87,8 +103,8 @@ class Launcher:
         # -----------------------------
 
         self.valid_button.check()
-        self.t_field.check()
-        self.t_field_pass.check()
+        for tf in self.text_fields:
+            tf.check()
 
     def render(self):
         self.__screen.fill((0, 0, 0))
@@ -98,8 +114,9 @@ class Launcher:
         if(self.waiting_response):
             s_valid_button.set_alpha(100)
         self.__screen.blit(s_valid_button, (self.valid_button.x, self.valid_button.y))
-        self.__screen.blit(self.t_field.render(self.client.texture_handler), (self.t_field.x, self.t_field.y))
-        self.__screen.blit(self.t_field_pass.render(self.client.texture_handler), (self.t_field_pass.x, self.t_field_pass.y))
+
+        for tf in self.text_fields:
+            self.__screen.blit(tf.render(self.client.texture_handler), (tf.x, tf.y))
 
 
         if(self.server_response != None):
@@ -121,3 +138,6 @@ class Launcher:
 
             if(not(self.client.net_listener.is_start)):
                 self.client.net_listener.start()
+
+    def get_fps(self):
+        return self.__fps

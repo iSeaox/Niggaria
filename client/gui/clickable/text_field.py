@@ -13,6 +13,7 @@ class TextField(clickable.ClickableContent):
 
         self.content = ""
         self.placeholder = placeholder
+        self.focus_bar_tick = 0
 
         self.__permited_character = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
 
@@ -28,14 +29,25 @@ class TextField(clickable.ClickableContent):
         else:
             s_content = text_renderer.render_text(self.content, texture_handler, size=1)
 
+        padding_left = 10
+        l_fps = 30
+
         s_textfield = pygame.Surface((self.width, self.height))
-        s_textfield.blit(s_content, (10, (self.height // 2) - (s_content.get_height() // 2)))
+        s_textfield.blit(s_content, (padding_left, (self.height // 2) - (s_content.get_height() // 2)))
+        if(self.is_focus and self.focus_bar_tick % l_fps <= (l_fps // 2)):
+            s_focus_bar = text_renderer.render_text("|", texture_handler)
+            if(self.content != ""):
+                left_offset = padding_left + s_content.get_width()
+            else:
+                left_offset = padding_left
+            s_textfield.blit(s_focus_bar, (left_offset, (self.height // 2) - (s_content.get_height() // 2)))
         pygame.draw.rect(s_textfield, (255, 255, 255), (0, 0, s_textfield.get_width(), s_textfield.get_height()), border_radius=3, width = 2)
 
         return s_textfield
 
     def check(self):
         super().check()
+        self.focus_bar_tick += 1
 
         pressed_click = pygame.mouse.get_pressed()
         if(pressed_click[0] or pressed_click[2]):
