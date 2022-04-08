@@ -61,7 +61,7 @@ class EntityUpdater:
                         elif(delta_x < 0):
                             delta_x = math.ceil(delta_x)
                             
-                        concerned_entity.x += delta_x
+                        concerned_entity.x = previous_pos[0] + delta_x
                     elif(previous_pos != () and next_pos == ()):
                         concerned_entity.x = previous_pos[0]
 
