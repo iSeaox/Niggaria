@@ -1,0 +1,9 @@
+{
+  "type": "simple",
+  "file": "textures/block/solid/stone.png",
+  "name": "block.solid.stone",
+  "format": {
+    "height": 16,
+    "width": 16
+  }
+}

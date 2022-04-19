@@ -46,7 +46,7 @@ class Client:
 
         self.server_acces = server_acces
         self.logger = logger
-        self.__net_buffer_size = 1024
+        self.__net_buffer_size = 4096
 
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.net_listener = net_listener.NetListener(self)
@@ -55,6 +55,8 @@ class Client:
 
         self.texture_handler = texture_handler.TextureHandler(self.logger)
         self.__launcher = launcher.Launcher(self)
+
+        self.view = (0, 18)
 
     def start(self):
         self.__run = True
@@ -75,7 +77,6 @@ class Client:
 
             elapsed = (time.time_ns() / 1_000_000_000 - begin)
             waiting_time = (1 / self.__fps) - elapsed
-            print(waiting_time)
             if(waiting_time > 0):
                 time.sleep(waiting_time)
 
@@ -135,7 +136,7 @@ class Client:
     def render(self, screen):
         screen.fill((0, 0, 0))
 
-        world_renderer.render_world(screen, self.__world)
+        world_renderer.render_world(screen, self.__world, self.view, self.texture_handler)
 
     def get_socket(self):
         return self.__socket

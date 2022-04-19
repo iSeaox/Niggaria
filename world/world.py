@@ -14,7 +14,7 @@ class World(serializable.Serializable):
         self.chunks = []
 
     def gen(self):
-        new_chunk = chunk.Chunk().gen()
+        new_chunk = chunk.Chunk(0).gen()
         self.chunks.append(new_chunk)
 
     def add_player_entity(self, player):

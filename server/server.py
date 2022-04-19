@@ -109,9 +109,9 @@ class Server:
                 if(data["action"]["type"] == "key_action"):
                     pressed_key = data["action"]["key"]
                     if(pressed_key == key_action.KEY_RIGHT):
-                        concerned_player.x += 5
+                        concerned_player.x += 0.2
                     elif(pressed_key == key_action.KEY_LEFT):
-                        concerned_player.x -= 5
+                        concerned_player.x -= 0.2
 
                 em_action = entity_move_action.EntityMoveAction(concerned_player)
                 em_action.timestamp = data["timestamp"]

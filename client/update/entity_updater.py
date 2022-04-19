@@ -22,9 +22,9 @@ class EntityUpdater:
         for action in self.local_buffer:
             if(action.type == "key_action"):
                 if(action.key == key_action.KEY_RIGHT):
-                    self.local_player.predicted_x += 5
+                    self.local_player.predicted_x += 0.2
                 elif(action.key == key_action.KEY_LEFT):
-                    self.local_player.predicted_x -= 5
+                    self.local_player.predicted_x -= 0.2
         # -------------------------------------------
         for entity_uid in entities.keys():
             if(entity_uid != self.local_player.instance_uid):
@@ -56,10 +56,6 @@ class EntityUpdater:
                         delta_t = next_timestamp - previous_timestamp
 
                         delta_x = (interpolate_timestamp - previous_timestamp) * dist_x / delta_t
-                        if(delta_x > 0):
-                            delta_x = math.floor(delta_x)
-                        elif(delta_x < 0):
-                            delta_x = math.ceil(delta_x)
 
                         concerned_entity.x = previous_pos[0] + delta_x
                     elif(previous_pos != () and next_pos == ()):

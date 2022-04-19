@@ -98,6 +98,8 @@ class Launcher:
                 self.client.get_world_updater().local_player = self.client.get_player()
                 self.client.get_entity_updater().local_player = self.client.get_player()
                 self.logger.log("world player linked with local player entity", subject="load")
+
+                self.client.texture_handler.load_textures(part="block")
                 self.is_active = False
 
 

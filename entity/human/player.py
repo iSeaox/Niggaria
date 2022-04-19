@@ -10,4 +10,4 @@ class Player(entity.Entity):
         self.name = name
 
         self.x = 20
-        self.y = 100
+        self.y = 30

@@ -31,7 +31,7 @@ class TextureHandler:
         t_type = info["type"].split("/")
         raw_image = pygame.image.load(info["file"]).convert_alpha()
         if(t_type[0] == "simple"):
-            self.loaded[info["name"]] = raw_image.copy()
+            self.loaded[info["name"]] = self.resize(raw_image.copy(), size_coef = 2)
             self.logger.log(info["name"] + " loaded", subject="load")
         elif(t_type[0] == "strip"):
             if(t_type[1] == "textures"):
