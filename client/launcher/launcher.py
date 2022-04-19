@@ -4,6 +4,8 @@ import json
 
 import entity.human.player as player
 
+import utils.serializable as serializable
+
 import client.packet.init_packet as init_packet
 import client.gui.clickable.button as gui_button
 import client.gui.clickable.clickable as clickable
@@ -85,11 +87,11 @@ class Launcher:
                     self.waiting_response = False
 
             elif(packet["type"] == "player_transfert_packet"):
-                self.client.set_player(player.Player().deserialize(packet["player"]))
+                self.client.set_player(serializable.deserialize(packet["player"]))
                 self.logger.log("player entity received", subject="load")
 
             elif(packet["type"] == "world_transfert_packet"):
-                self.client.set_world(world.World().deserialize(packet["world"]))
+                self.client.set_world(serializable.deserialize(packet["world"]))
                 self.logger.log("world received", subject="load")
 
                 self.client.get_world().set_local_player(self.client.get_player())

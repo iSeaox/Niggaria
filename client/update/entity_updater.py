@@ -42,13 +42,13 @@ class EntityUpdater:
 
                     i = 0
                     while(i < len(working_buffer) and working_buffer[i][0] <= interpolate_timestamp):
-                        previous_pos = (working_buffer[i][1].new_x, working_buffer[i][1].new_y)
+                        previous_pos = (working_buffer[i][1].entity.x, working_buffer[i][1].entity.y)
                         previous_timestamp = working_buffer[i][0]
                         i += 1
 
                     i = len(working_buffer) - 1
                     while(i >= 0 and working_buffer[i][0] >= interpolate_timestamp):
-                        next_pos = (working_buffer[i][1].new_x, working_buffer[i][1].new_y)
+                        next_pos = (working_buffer[i][1].entity.x, working_buffer[i][1].entity.y)
                         next_timestamp = working_buffer[i][0]
                         i -= 1
                     if(previous_pos != () and next_pos != ()):
@@ -60,7 +60,7 @@ class EntityUpdater:
                             delta_x = math.floor(delta_x)
                         elif(delta_x < 0):
                             delta_x = math.ceil(delta_x)
-                            
+
                         concerned_entity.x = previous_pos[0] + delta_x
                     elif(previous_pos != () and next_pos == ()):
                         concerned_entity.x = previous_pos[0]
@@ -73,8 +73,8 @@ class EntityUpdater:
 
     def push_local_action(self, action):
         if(action.type == "entity_move_action"):
-            self.local_player.x = action.new_x
-            self.local_player.y = action.new_y
+            self.local_player.x = action.entity.x
+            self.local_player.y = action.entity.y
 
             i = 0
             temp = []

@@ -5,6 +5,8 @@ import pygame
 
 import network.net_listener as net_listener
 
+import utils.serializable as serializable
+
 import entity.human.player as player
 
 import client.packet.action_transfert_packet as action_transfert_packet
@@ -108,17 +110,17 @@ class Client:
                 if(packet["action"]["type"] == "connection_action"):
                     c_action = packet["action"]
                     if(c_action["connection_type"] == connection_action.JOIN_SERVER):
-                        packet_player = player.Player().deserialize(c_action["player"])
+                        packet_player = serializable.deserialize(c_action["player"])
                         self.__world.add_player_entity(packet_player)
                         self.logger.log(packet_player.name + " joined the game", subject="join")
 
                     elif(c_action["connection_type"] == connection_action.QUIT_SERVER):
-                        packet_player = player.Player().deserialize(c_action["player"])
+                        packet_player = serializable.deserialize(c_action["player"])
                         self.__world.remove_player_entity(packet_player)
                         self.logger.log(packet_player.name + " left the game", subject="quit")
 
                 elif(packet["action"]["type"] == "entity_move_action"):
-                    em_action = entity_move_action.EntityMoveAction().deserialize(packet["action"])
+                    em_action = serializable.deserialize(packet["action"])
                     if(packet["ack"] == True):
                         self.__entity_updater.push_local_action(em_action)
                     else:

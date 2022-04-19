@@ -39,6 +39,7 @@ class Server:
 
         self.__connected_players = {}
         self.server_world = world.World()
+        self.server_world.gen()
 
 
     def start(self):
