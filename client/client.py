@@ -14,6 +14,7 @@ import client.packet.quit_packet as quit_packet
 
 import client.render.world_renderer as world_renderer
 import client.render.texture_handler as texture_handler
+import client.render.view as view_handler
 
 import client.update.entity_updater as entity_updater
 import client.update.world_updater as world_updater
@@ -56,7 +57,7 @@ class Client:
         self.texture_handler = texture_handler.TextureHandler(self.logger)
         self.__launcher = launcher.Launcher(self)
 
-        self.view = (0, 18)
+        self.view = None
 
     def start(self):
         self.__run = True
@@ -67,6 +68,8 @@ class Client:
 
         self.texture_handler.load_textures(part="gui")
         self.__launcher.start(screen)
+        self.view = view_handler.View((0, 18), self.__player, screen.get_size())
+
 
         while(self.__run):
             begin = time.time_ns() / 1_000_000_000
@@ -131,6 +134,7 @@ class Client:
         # -------------------------------------
 
         self.__world_updater.update(self.__world)
+        self.view.check()
 
 
     def render(self, screen):
