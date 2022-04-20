@@ -113,6 +113,8 @@ class Server:
                     elif(pressed_key == key_action.KEY_LEFT):
                         concerned_player.x -= 0.2
 
+                    concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
+
                 em_action = entity_move_action.EntityMoveAction(concerned_player)
                 em_action.timestamp = data["timestamp"]
                 raw_packet = action_transfert_packet.ActionTransfertPacket(em_action, True).serialize()

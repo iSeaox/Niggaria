@@ -25,6 +25,8 @@ class EntityUpdater:
                     self.local_player.predicted_x += 0.2
                 elif(action.key == key_action.KEY_LEFT):
                     self.local_player.predicted_x -= 0.2
+
+                self.local_player.predicted_x %= 192
         # -------------------------------------------
         for entity_uid in entities.keys():
             if(entity_uid != self.local_player.instance_uid):
@@ -34,7 +36,7 @@ class EntityUpdater:
                 if(entity_uid in self.buffers.keys()):
                     interpolate_timestamp = time.time_ns() - TPS_TIME
                     working_buffer = self.buffers[entity_uid]
-                    beta = 0
+                    delta_x_max = 10 # pour ne pas faire d'interpolation pendant les téléportations entre autre
                     previous_pos = ()
                     previous_timestamp = None
                     next_pos = ()
@@ -56,8 +58,8 @@ class EntityUpdater:
                         delta_t = next_timestamp - previous_timestamp
 
                         delta_x = (interpolate_timestamp - previous_timestamp) * dist_x / delta_t
-
-                        concerned_entity.x = previous_pos[0] + delta_x
+                        if(delta_x < delta_x_max):
+                            concerned_entity.x = previous_pos[0] + delta_x
                     elif(previous_pos != () and next_pos == ()):
                         concerned_entity.x = previous_pos[0]
 

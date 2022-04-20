@@ -47,7 +47,7 @@ class Client:
 
         self.server_acces = server_acces
         self.logger = logger
-        self.__net_buffer_size = 4096
+        self.__net_buffer_size = 1024 * 32
 
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.net_listener = net_listener.NetListener(self)
@@ -68,7 +68,7 @@ class Client:
 
         self.texture_handler.load_textures(part="gui")
         self.__launcher.start(screen)
-        self.view = view_handler.View((0, 18), self.__player, screen.get_size())
+        self.view = view_handler.View((0, 17), self.__player, screen.get_size(), 2, self.__world.size)
 
 
         while(self.__run):
