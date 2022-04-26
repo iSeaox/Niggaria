@@ -1,10 +1,12 @@
 import sys
+import matplotlib.pyplot as plt
 
 import utils.serializable as serializable
 
 import entity.human.player as player
 
 import world.chunk as chunk
+import world.generator.noise as noise
 
 CHUNK_WIDTH = 32
 
@@ -17,8 +19,13 @@ class World(serializable.Serializable):
         self.chunks = []
 
     def gen(self):
+        nb_point = 8
+        gen_noise = noise.gen_smooth_noise(nb_point, (self.size * CHUNK_WIDTH) // nb_point)
+        plt.plot(gen_noise[0], gen_noise[1], "ro")
+        plt.show()
+
         for i in range(self.size):
-            new_chunk = chunk.Chunk(i, CHUNK_WIDTH).gen()
+            new_chunk = chunk.Chunk(i, CHUNK_WIDTH).gen(gen_noise)
             self.chunks.append(new_chunk)
 
         print("map width: ", (self.size * CHUNK_WIDTH), " | ", -3 % (self.size * CHUNK_WIDTH))
