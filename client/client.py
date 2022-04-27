@@ -47,6 +47,7 @@ class Client:
         self.profile = None
 
         self.__actions_buffer = []
+        self.__key_buffer = {0: False, 1: False, 2: False}
 
         self.server_acces = server_acces
         self.logger = logger
@@ -102,22 +103,60 @@ class Client:
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 self.__run = False
-            # elif(event.type == pygame.KEYDOWN): print(event.key)
-        if(pygame.key.get_pressed()[100]):
-            new_action = key_action.KeyAction(key_action.KEY_RIGHT)
-            self.__entity_updater.push_local_action(new_action)
-            raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-            self.__socket.sendto(str.encode(raw_packet), self.server_acces)
-        if(pygame.key.get_pressed()[113]):
-            new_action = key_action.KeyAction(key_action.KEY_LEFT)
-            self.__entity_updater.push_local_action(new_action)
-            raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-            self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+            elif(event.type == pygame.KEYDOWN):
+                if(event.key == 100):
+                    self.__player.velocity[0] += 0.5
+                    self.__key_buffer[key_action.KEY_RIGHT] = True
 
-        if(pygame.key.get_pressed()[32]):
-            new_action = key_action.KeyAction(key_action.KEY_JUMP)
-            self.jump()
-            raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_UP)
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
+                elif(event.key == 113):
+                    self.__player.velocity[0] += -0.5
+                    self.__key_buffer[key_action.KEY_LEFT] = True
+
+                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_UP)
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
+                elif(event.key == 32):
+                    self.__key_buffer[key_action.KEY_JUMP] = True
+                    if(self.__player.predicted_y == 25):
+                        self.__player.velocity[1] = 0.9
+
+                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
+            elif(event.type == pygame.KEYUP):
+                if(event.key == 100):
+                    self.__key_buffer[key_action.KEY_RIGHT] = False
+                    self.__player.velocity[0] -= 0.5
+
+                    new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_DOWN)
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
+                elif(event.key == 113):
+                    self.__key_buffer[key_action.KEY_LEFT] = False
+                    self.__player.velocity[0] -= -0.5
+
+                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_DOWN)
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
+                elif(event.key == 32):
+                    self.__key_buffer[key_action.KEY_JUMP] = False
+
+                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_DOWN)
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
 
         # --------- PACKET HANDLING ---------
         # if(len(self.buffer) > 0):
@@ -164,10 +203,6 @@ class Client:
         screen.fill((0, 0, 0))
 
         world_renderer.render_world(screen, self.__world, self.view, self.texture_handler)
-
-    def jump(self):
-        if(self.__player.predicted_y == 25):
-            self.__player.velocity[1] = 0.9
 
     def get_socket(self):
         return self.__socket
