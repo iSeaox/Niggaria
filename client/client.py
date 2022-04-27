@@ -3,6 +3,8 @@ import time
 import json
 import pygame
 
+from server.server import SERVER_TPS
+
 import network.net_listener as net_listener
 
 import utils.serializable as serializable
@@ -33,6 +35,7 @@ class Client:
     def __init__(self, server_acces, logger):
         self.__run = False
         self.__fps = CLIENT_FPS
+        self.__tps = SERVER_TPS
         self.__player = None
         self.__world = None
 
@@ -69,12 +72,21 @@ class Client:
         self.texture_handler.load_textures(part="gui")
         self.__launcher.start(screen)
         self.view = view_handler.View((0, 17), self.__player, screen.get_size(), 2, self.__world.size)
-
+        fpt = self.__fps // self.__tps
+        tick_counter = 0
+        tick = 0
 
         while(self.__run):
             begin = time.time_ns() / 1_000_000_000
+            if(not(tick_counter % fpt)):
+                tick_counter = 0
+                tick += 1
+                tick %= self.__tps
+                self.tick()
 
-            self.update()
+            tick_counter += 1
+
+            self.update(tick, fpt)
             self.render(screen)
             pygame.display.flip()
 
@@ -86,11 +98,11 @@ class Client:
         raw_packet = quit_packet.QuitPacket(self.profile).serialize()
         self.__socket.sendto(str.encode(raw_packet), self.server_acces)
 
-    def update(self):
+    def update(self, tick, fpt):
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 self.__run = False
-
+            # elif(event.type == pygame.KEYDOWN): print(event.key)
         if(pygame.key.get_pressed()[100]):
             new_action = key_action.KeyAction(key_action.KEY_RIGHT)
             self.__entity_updater.push_local_action(new_action)
@@ -101,6 +113,11 @@ class Client:
             self.__entity_updater.push_local_action(new_action)
             raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
             self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+
+        if(pygame.key.get_pressed()[32]):
+            new_action = key_action.KeyAction(key_action.KEY_JUMP)
+            self.jump()
+            raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
 
         # --------- PACKET HANDLING ---------
         # if(len(self.buffer) > 0):
@@ -133,14 +150,24 @@ class Client:
             self.buffer = self.buffer[1:]
         # -------------------------------------
 
-        self.__world_updater.update(self.__world)
+        self.__world_updater.update(self.__world, tick, fpt)
         self.view.check()
 
+    def tick(self):
+        GRAVITY_INTENSITY = 0.13
+        player = self.__player
+
+        if(player.predicted_y >= 25):
+            player.velocity[1] -= GRAVITY_INTENSITY
 
     def render(self, screen):
         screen.fill((0, 0, 0))
 
         world_renderer.render_world(screen, self.__world, self.view, self.texture_handler)
+
+    def jump(self):
+        if(self.__player.predicted_y == 25):
+            self.__player.velocity[1] = 0.9
 
     def get_socket(self):
         return self.__socket

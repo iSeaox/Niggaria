@@ -14,10 +14,11 @@ class EntityUpdater:
         self.local_buffer = []
         self.local_player = None
 
-    def update(self, entities):
+    def update(self, entities, tick, fpt):
+
         # ------- PLAYER WHO PLAY ON CLIENT --------
         self.local_player.predicted_x = self.local_player.x
-        self.local_player.predicted_y = self.local_player.y
+        # self.local_player.predicted_y = self.local_player.y
 
         for action in self.local_buffer:
             if(action.type == "key_action"):
@@ -27,6 +28,12 @@ class EntityUpdater:
                     self.local_player.predicted_x -= 0.2
 
                 self.local_player.predicted_x %= 192
+
+
+        self.local_player.predicted_y += self.local_player.velocity[1] / fpt
+
+        if(self.local_player.predicted_y < 25):
+            self.local_player.predicted_y = 25
         # -------------------------------------------
         for entity_uid in entities.keys():
             if(entity_uid != self.local_player.instance_uid):
@@ -72,7 +79,7 @@ class EntityUpdater:
     def push_local_action(self, action):
         if(action.type == "entity_move_action"):
             self.local_player.x = action.entity.x
-            self.local_player.y = action.entity.y
+            # self.local_player.y = action.entity.y
 
             i = 0
             temp = []

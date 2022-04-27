@@ -13,7 +13,10 @@ class Serializable:
             elif(type(self.__dict__[key]) == list):
                 json_dict[key] = []
                 for item in self.__dict__[key]:
-                    json_dict[key].append(item.serialize())
+                    if(type(item) in AUTHORIZED_TYPE):
+                        json_dict[key].append(item)
+                    else:
+                        json_dict[key].append(item.serialize())
 
             elif(type(self.__dict__[key]) == dict):
                 json_dict[key] = {}

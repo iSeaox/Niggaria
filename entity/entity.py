@@ -11,3 +11,9 @@ class Entity(serializable.Serializable):
 
         self.predicted_x = 0
         self.predicted_y = 0
+
+        self.velocity = [0, 0]
+
+    def add_velocity(vector):
+        self.velocity[0] += vector[0]
+        self.velocity[1] += vector[1]
