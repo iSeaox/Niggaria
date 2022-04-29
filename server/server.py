@@ -6,6 +6,7 @@ import server.packet.profile_transfert_packet as profile_transfert_packet
 import server.packet.player_transfert_packet as player_transfert_packet
 import server.packet.action_transfert_packet as action_transfert_packet
 import server.packet.world_transfert_packet as world_transfert_packet
+import server.packet.chunk_transfert_packet as chunk_transfert_packet
 
 import security.profile_handler as profile_handler
 
@@ -83,6 +84,10 @@ class Server:
 
                     raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
                     self.__socket.sendto(str.encode(raw_packet), packet[1])
+
+                    for i in range(self.server_world.size):
+                        raw_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk = self.server_world.chunks[i], id = i).serialize()
+                        self.__socket.sendto(str.encode(raw_packet), packet[1])
                     # ---- DATA FOR OTHERS ----
                     c_action = connection_action.ConnectionAction(new_player_entity, connection_action.JOIN_SERVER)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(c_action).serialize()

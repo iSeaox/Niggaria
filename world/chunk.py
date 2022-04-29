@@ -24,6 +24,7 @@ class Chunk(serializable.Serializable):
             x = i + self.chunk_width * self.chunk_x
             y = round(40 + noise[1][x % len(noise[1])] * max_height)
             self.blocks.append(b_dirt.Dirt(x, y))
-            self.blocks.append(b_dirt.Dirt(x, y - 1))
+            for offset in range(10):
+                self.blocks.append(b_dirt.Dirt(x, y - offset))
 
         return self

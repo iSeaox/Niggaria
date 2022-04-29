@@ -88,10 +88,14 @@ class Launcher:
 
             elif(packet["type"] == "player_transfert_packet"):
                 self.client.set_player(serializable.deserialize(packet["player"]))
+
                 self.logger.log("player entity received", subject="load")
 
             elif(packet["type"] == "world_transfert_packet"):
-                self.client.set_world(serializable.deserialize(packet["world"]))
+                world = serializable.deserialize(packet["world"])
+                world.chunks = [0] * world.size
+
+                self.client.set_world(world)
                 self.logger.log("world received", subject="load")
 
                 self.client.get_world().set_local_player(self.client.get_player())
@@ -99,8 +103,14 @@ class Launcher:
                 self.client.get_entity_updater().local_player = self.client.get_player()
                 self.logger.log("world player linked with local player entity", subject="load")
 
-                self.client.texture_handler.load_textures(part="block")
-                self.is_active = False
+            elif(packet["type"] == "chunk_transfert_packet"):
+                chunk = serializable.deserialize(packet["chunk"])
+                self.client.get_world().chunks[int(packet["id"])] = chunk
+                self.logger.log("chunk number" + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
+
+                if(int(packet["id"]) == self.client.get_world().size - 1):
+                    self.is_active = False
+                    self.client.texture_handler.load_textures(part="block")
 
 
             self.client.buffer = self.client.buffer[1:]

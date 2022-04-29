@@ -54,3 +54,6 @@ class World(serializable.Serializable):
 
     def set_local_player(self, player_entity):
         self.entities[player_entity.instance_uid] = player_entity
+
+    def serialize(self):
+        return super().serialize("chunks")
