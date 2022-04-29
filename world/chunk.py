@@ -3,6 +3,7 @@ import random
 import utils.serializable as serializable
 
 import block.solid.stone as b_stone
+import block.solid.dirt as b_dirt
 
 
 class Chunk(serializable.Serializable):
@@ -17,12 +18,12 @@ class Chunk(serializable.Serializable):
         self.background_block = []
 
     def gen(self, noise):
-        max_height = 20
+        max_height = 40
 
         for i in range(self.chunk_width):
             x = i + self.chunk_width * self.chunk_x
-            y = round(20 + noise[1][x % len(noise[1])] * max_height)
-            print(x, y)
-            self.blocks.append(b_stone.Stone(x, y))
+            y = round(40 + noise[1][x % len(noise[1])] * max_height)
+            self.blocks.append(b_dirt.Dirt(x, y))
+            self.blocks.append(b_dirt.Dirt(x, y - 1))
 
         return self

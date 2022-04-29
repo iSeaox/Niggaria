@@ -28,11 +28,16 @@ import action.client.key_action as key_action
 import action.server.connection_action as connection_action
 import action.server.entity_move_action as entity_move_action
 
+import world.world as world
+
 
 CLIENT_FPS = 60
 
 class Client:
     def __init__(self, server_acces, logger):
+
+        self.debug_map_gen = True
+
         self.__run = False
         self.__fps = CLIENT_FPS
         self.__tps = SERVER_TPS
@@ -51,7 +56,7 @@ class Client:
 
         self.server_acces = server_acces
         self.logger = logger
-        self.__net_buffer_size = 1024 * 32
+        self.__net_buffer_size = 1024 * 256
 
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.net_listener = net_listener.NetListener(self)
@@ -67,7 +72,11 @@ class Client:
         self.__run = True
 
         pygame.init()
-        screen = pygame.display.set_mode((1080, 720))
+
+        screen_info = pygame.display.Info()
+        self.logger.log("the screen size is "+ str(screen_info.current_w) +":"+ str(screen_info.current_h), subject="info")
+
+        screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h))
         pygame.display.set_caption("Niggaria")
 
         self.texture_handler.load_textures(part="gui")
@@ -158,6 +167,17 @@ class Client:
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
 
+        if(self.debug_map_gen):
+            speed = 2
+            if(pygame.key.get_pressed()[1073741903]):
+                self.view.pos = (self.view.pos[0] + speed, self.view.pos[1])
+            elif(pygame.key.get_pressed()[1073741904]):
+                self.view.pos = (self.view.pos[0] - speed, self.view.pos[1])
+            elif(pygame.key.get_pressed()[1073741905]):
+                self.view.pos = (self.view.pos[0], self.view.pos[1] - speed)
+            elif(pygame.key.get_pressed()[1073741906]):
+                self.view.pos = (self.view.pos[0], self.view.pos[1] + speed)
+
         # --------- PACKET HANDLING ---------
         # if(len(self.buffer) > 0):
         #     print(self.buffer)
@@ -190,7 +210,12 @@ class Client:
         # -------------------------------------
 
         self.__world_updater.update(self.__world, tick, fpt)
-        self.view.check()
+
+        if(not(self.debug_map_gen)):
+            self.view.check()
+        else:
+            cur_pos = self.view.pos
+            self.view.pos = (cur_pos[0] % (self.view.world_size * world.CHUNK_WIDTH), cur_pos[1])
 
     def tick(self):
         GRAVITY_INTENSITY = 0.13

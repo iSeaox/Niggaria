@@ -50,6 +50,17 @@ class TextureHandler:
             elif(t_type[1] == "gui"):
                 self.__load_sheet_gui(info, raw_image)
 
+            elif(t_type[1] == "block"):
+                self.__load_sheet_block(info, raw_image)
+
+    def __load_sheet_block(self, info, raw_image):
+        items = info["sheet"]["items"]
+
+        for item in items:
+            new_sur = self.resize(raw_image.subsurface(pygame.Rect((item["x"], item["y"], item["width"], item["height"]))), size_coef = 2)
+            self.loaded[info["name"] + "." + item["name"]] = new_sur
+            self.logger.log(info["name"] + "." + item["name"] + " loaded", subject="load")
+
     def __load_sheet_gui(self, info, raw_image):
         items = info["sheet"]["items"]
 
@@ -57,6 +68,7 @@ class TextureHandler:
             new_sur = raw_image.subsurface(pygame.Rect((item["x"], item["y"], item["width"], item["height"])))
             self.loaded[info["name"] + "." + item["name"]] = new_sur
             self.logger.log(info["name"] + "." + item["name"] + " loaded", subject="load")
+
 
     def __load_sheet_charset(self, info, raw_image):
         orga = info["charset"]["organisation"]

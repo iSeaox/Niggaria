@@ -57,8 +57,8 @@ class Server:
     def tick(self):
         move_actions = {}
 
-        if(len(self.buffer) > 0):
-            print(self.buffer)
+        # if(len(self.buffer) > 0):
+        #     print(self.buffer)
 
         while(len(self.buffer) > 0):
             packet = self.buffer[0]
