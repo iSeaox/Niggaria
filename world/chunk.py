@@ -17,11 +17,11 @@ class Chunk(serializable.Serializable):
         self.background_block = []
 
     def gen(self, noise):
-        max_height = 20
+        max_height = 10
 
         for i in range(self.chunk_width):
             x = i + self.chunk_width * self.chunk_x
-            y = round(20 + noise[1][x % len(noise[1])] * max_height)
+            y = round(25 + noise[1][x % len(noise[1])] * max_height)
             print(x, y)
             self.blocks.append(b_stone.Stone(x, y))
 

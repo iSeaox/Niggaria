@@ -14,6 +14,6 @@ class Entity(serializable.Serializable):
 
         self.velocity = [0, 0]
 
-    def add_velocity(vector):
+    def add_velocity(self, vector):
         self.velocity[0] += vector[0]
         self.velocity[1] += vector[1]

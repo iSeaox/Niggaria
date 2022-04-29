@@ -19,10 +19,10 @@ class World(serializable.Serializable):
         self.chunks = []
 
     def gen(self):
-        nb_point = 8
-        gen_noise = noise.gen_smooth_noise(nb_point, (self.size * CHUNK_WIDTH) // nb_point)
+        nb_point = 7
+        gen_noise = noise.gen_smooth_noise(nb_point, (self.size * CHUNK_WIDTH) // nb_point - 1)
         plt.plot(gen_noise[0], gen_noise[1], "ro")
-        plt.show()
+        # plt.show()
 
         for i in range(self.size):
             new_chunk = chunk.Chunk(i, CHUNK_WIDTH).gen(gen_noise)

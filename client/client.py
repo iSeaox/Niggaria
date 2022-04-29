@@ -108,7 +108,7 @@ class Client:
                     self.__player.velocity[0] += 0.5
                     self.__key_buffer[key_action.KEY_RIGHT] = True
 
-                    new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_UP)
+                    new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_DOWN)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
@@ -117,7 +117,7 @@ class Client:
                     self.__player.velocity[0] += -0.5
                     self.__key_buffer[key_action.KEY_LEFT] = True
 
-                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_UP)
+                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_DOWN)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
@@ -127,7 +127,7 @@ class Client:
                     if(self.__player.predicted_y == 25):
                         self.__player.velocity[1] = 0.9
 
-                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
+                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_DOWN)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
 
@@ -136,7 +136,7 @@ class Client:
                     self.__key_buffer[key_action.KEY_RIGHT] = False
                     self.__player.velocity[0] -= 0.5
 
-                    new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_DOWN)
+                    new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_UP)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
@@ -145,7 +145,7 @@ class Client:
                     self.__key_buffer[key_action.KEY_LEFT] = False
                     self.__player.velocity[0] -= -0.5
 
-                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_DOWN)
+                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_UP)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
@@ -153,7 +153,7 @@ class Client:
                 elif(event.key == 32):
                     self.__key_buffer[key_action.KEY_JUMP] = False
 
-                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_DOWN)
+                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
@@ -181,7 +181,7 @@ class Client:
 
                 elif(packet["action"]["type"] == "entity_move_action"):
                     em_action = serializable.deserialize(packet["action"])
-                    if(packet["ack"] == True):
+                    if(em_action.entity.uuid == self.__player.uuid):
                         self.__entity_updater.push_local_action(em_action)
                     else:
                         self.__entity_updater.push_action(em_action.entity, em_action)

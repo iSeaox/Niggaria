@@ -55,7 +55,7 @@ class Server:
                 time.sleep(waiting_time)
 
     def tick(self):
-        move_actions = {}
+        # move_actions = {}
 
         if(len(self.buffer) > 0):
             print(self.buffer)
@@ -109,11 +109,15 @@ class Server:
                 if(data["action"]["type"] == "key_action"):
                     pressed_key = data["action"]["key"]
                     if(pressed_key == key_action.KEY_RIGHT):
-                        concerned_player.x += 0.2
+                        if data['action']['action'] == key_action.ACTION_DOWN:
+                            concerned_player.add_velocity((0.5, 0))
+                        else:
+                            concerned_player.add_velocity((-0.5, 0))
                     elif(pressed_key == key_action.KEY_LEFT):
-                        concerned_player.x -= 0.2
-
-                    concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
+                        if data['action']['action'] == key_action.ACTION_DOWN:
+                            concerned_player.add_velocity((-0.5, 0))
+                        else:
+                            concerned_player.add_velocity((0.5, 0))
 
                 em_action = entity_move_action.EntityMoveAction(concerned_player)
                 em_action.timestamp = data["timestamp"]
@@ -121,15 +125,23 @@ class Server:
                 self.__socket.sendto(str.encode(raw_packet), packet[1])
 
                 em_action.timestamp = time.time_ns()
-                move_actions[em_action.entity.instance_uid] = (em_action, data["uuid"])
+                # move_actions[em_action.entity.instance_uid] = (em_action, data["uuid"])
 
             self.buffer = self.buffer[1:]
 
-        for move_action in move_actions.values():
-            for other_player_uuid in self.__connected_players.keys():
-                if(other_player_uuid != move_action[1]):
-                    raw_packet = action_transfert_packet.ActionTransfertPacket(move_action[0]).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), self.__connected_players[other_player_uuid]["access"])
+        # for move_action in move_actions.values():
+        #     for other_player_uuid in self.__connected_players.keys():
+        #         if(other_player_uuid != move_action[1]):
+        for player_uuid in self.__connected_players.keys():
+            concerned_player = self.__connected_players[player_uuid]['entity']
+            if concerned_player.velocity != [0, 0]:
+                concerned_player.x += concerned_player.velocity[0]
+                concerned_player.y += concerned_player.velocity[1]
+
+                concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
+
+                raw_packet = action_transfert_packet.ActionTransfertPacket(concerned_player).serialize()
+                self.__socket.sendto(str.encode(raw_packet), self.__connected_players[player_uuid]['access'])
 
 
 

@@ -11,3 +11,6 @@ class Player(entity.Entity):
 
         self.x = 20
         self.y = 30
+
+        self.predicted_x = 20
+        self.predicted_y = 30
