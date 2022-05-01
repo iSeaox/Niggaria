@@ -11,6 +11,7 @@ import server.packet.chunk_transfert_packet as chunk_transfert_packet
 import security.profile_handler as profile_handler
 
 import network.net_listener as net_listener
+import network.packet.huge_packet_transmitter as huge_packet_transmitter
 
 import entity.human.player as player
 
@@ -81,6 +82,8 @@ class Server:
                     # ---- DATA FOR JOINING PLAYER ----
                     raw_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
                     self.__socket.sendto(str.encode(raw_packet), packet[1])
+
+                    huge_packet_transmitter.HugePacketTransmitter(self).transmit_packet(str(self.server_world.full_serialize()), None)
 
                     raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
                     self.__socket.sendto(str.encode(raw_packet), packet[1])

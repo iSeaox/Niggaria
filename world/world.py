@@ -113,3 +113,6 @@ class World(serializable.Serializable):
 
     def serialize(self):
         return super().serialize("chunks")
+
+    def full_serialize(self):
+        return super().serialize()
