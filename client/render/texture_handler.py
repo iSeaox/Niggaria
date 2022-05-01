@@ -55,11 +55,11 @@ class TextureHandler:
 
     def __load_sheet_block(self, info, raw_image):
         items = info["sheet"]["items"]
-
+        self.loaded[info["name"]] = {}
         for item in items:
             new_sur = self.resize(raw_image.subsurface(pygame.Rect((item["x"], item["y"], item["width"], item["height"]))), size_coef = 2)
-            self.loaded[info["name"] + "." + item["name"]] = new_sur
-            self.logger.log(info["name"] + "." + item["name"] + " loaded", subject="load")
+            self.loaded[info["name"]][item['property']] = new_sur
+            self.logger.log(info["name"] + ":" + str(item["property"]) + " loaded", subject="load")
 
     def __load_sheet_gui(self, info, raw_image):
         items = info["sheet"]["items"]
@@ -91,31 +91,17 @@ class TextureHandler:
 
 
     def get_texture(self, texture_path):
-        if(texture_path in self.loaded.keys()):
-            return self.loaded[texture_path]
+        t_path = texture_path.split(":")
+        if(len(t_path) == 2 and not(int(t_path[1]) == 0)):
+            if(t_path[0] in self.loaded.keys() and int(t_path[1]) in self.loaded[t_path[0]].keys()):
+                return self.loaded[t_path[0]][int(t_path[1])]
+            else:
+                raise KeyError("Cette texture n'existe pas : " + texture_path)
         else:
-            raise KeyError("Cette texture n'existe pas : " + texture_path)
+            if(t_path[0] in self.loaded.keys()):
+                return self.loaded[t_path[0]]
+            else:
+                raise KeyError("Cette texture n'existe pas : " + texture_path)
 
     def resize(self, surface, size_coef):
         return pygame.transform.scale(surface, (surface.get_width() * size_coef, surface.get_height() * size_coef))
-        # if(size_coef == 1):
-        #     return surface
-        #
-        # final_textures = pygame.Surface((surface.get_width() * size_coef, surface.get_height() * size_coef))
-        #
-        # rt_buffer = surface.get_buffer()
-        #
-        # temp_bytes = b''
-        # current_line = b''
-        # pixel_index = 0
-        # while(pixel_index < rt_buffer.length / 4):
-        #     if(pixel_index % surface.get_width() == 0):
-        #         temp_bytes += current_line * size_coef
-        #         current_line = b''
-        #
-        #     current_pixel = rt_buffer.raw[(pixel_index * 4):(pixel_index * 4) + 4]
-        #     current_line += current_pixel * size_coef
-        #     pixel_index += 1
-        #
-        # final_textures.get_buffer().write(temp_bytes)
-        # return final_textures

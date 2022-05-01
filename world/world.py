@@ -8,6 +8,8 @@ import entity.human.player as player
 import world.chunk as chunk
 import world.generator.noise as noise
 
+import block.solid.dirt as b_dirt
+
 CHUNK_WIDTH = 32
 
 class World(serializable.Serializable):
@@ -38,6 +40,60 @@ class World(serializable.Serializable):
         for i in range(self.size):
             new_chunk = chunk.Chunk(i, CHUNK_WIDTH).gen(sum_noise)
             self.chunks.append(new_chunk)
+
+        blocks = {}
+        for c in self.chunks:
+            for b in c.blocks:
+                blocks[(b.x, b.y)] = b
+
+        for b_pos in blocks.keys():
+            blocks[b_pos].property = 0
+            b_up = (b_pos[0], b_pos[1] + 1)
+            b_down = (b_pos[0], b_pos[1] - 1)
+            b_right = (b_pos[0] + 1, b_pos[1])
+            b_left = (b_pos[0] - 1, b_pos[1])
+            b_up_right = (b_pos[0] + 1, b_pos[1] + 1)
+            b_up_left = (b_pos[0] - 1, b_pos[1] + 1)
+
+            if(b_up in blocks.keys()):
+                if(b_down in blocks.keys()):
+                    blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_CENTER
+                else:
+                    blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_DOWN
+
+            else:
+                if(b_down in blocks.keys()):
+                    blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_TOP
+                    blocks[b_pos].property |= b_dirt.PROPERTY_GRASS
+
+                else:
+                    blocks[b_pos].property |= b_dirt.PROPERTY_SIMPLE
+
+            if(b_right in blocks.keys()):
+                if(b_left in blocks.keys()):
+                    blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_MID
+                else:
+                    blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_LEFT
+
+            else:
+                if(b_left in blocks.keys()):
+                    blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_RIGHT
+                else:
+                    blocks[b_pos].property |= b_dirt.PROPERTY_BOTH_SIDE
+
+            if(blocks[b_pos].property & b_dirt.PROPERTY_SIDE_MID == b_dirt.PROPERTY_SIDE_MID and blocks[b_pos].property & b_dirt.PROPERTY_HEIGHT_MASK == 0):
+                if(not(b_up_right in blocks.keys())):
+                    if(not(b_up_left in blocks.keys())):
+                        blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_BOTH
+                    else:
+                        blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_RIGHT
+                else:
+                    if(not(b_up_left in blocks.keys())):
+                        blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_LEFT
+
+
+
+
 
         print("map width: ", (self.size * CHUNK_WIDTH), " | ", -3 % (self.size * CHUNK_WIDTH))
 

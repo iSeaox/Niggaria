@@ -96,6 +96,7 @@ class Launcher:
                 world.chunks = [0] * world.size
 
                 self.client.set_world(world)
+                self.logger.log("------------- WORLD -------------")
                 self.logger.log("world received", subject="load")
 
                 self.client.get_world().set_local_player(self.client.get_player())
@@ -106,10 +107,11 @@ class Launcher:
             elif(packet["type"] == "chunk_transfert_packet"):
                 chunk = serializable.deserialize(packet["chunk"])
                 self.client.get_world().chunks[int(packet["id"])] = chunk
-                self.logger.log("chunk number" + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
+                self.logger.log("chunk number " + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
 
                 if(int(packet["id"]) == self.client.get_world().size - 1):
                     self.is_active = False
+                    self.logger.log("---------------------------------")
                     self.client.texture_handler.load_textures(part="block")
 
 
