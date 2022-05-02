@@ -11,21 +11,19 @@ class HugePacketTransmitter:
         self.buffer = {}
 
     def transmit_packet(self, raw_packet, client_access):
-        total = len(raw_packet) // PACKET_SIZE
+        total = len(raw_packet) // PACKET_SIZE + 1
         uid = uid_generator.gen_uid(8)
         packet = []
         i = 0
-        while(i < total - 1):
-            pt_packet = partial_packet.PartialPacket(raw_packet[i:i + PACKET_SIZE], uid, i, total)
+        while(i < total):
+            pt_packet = partial_packet.PartialPacket(raw_packet[i * PACKET_SIZE:(i + 1) * PACKET_SIZE], uid, i, total)
             packet.append(pt_packet)
             i += 1
 
-        pt_packet = partial_packet.PartialPacket(raw_packet[i:len(raw_packet) - 1], uid, i, total)
-        packet.append(pt_packet)
-
         self.buffer[uid] = packet
-        print(packet, total)
-        print(len(packet))
 
-    def acknowledgment_packet(self, packet_code):
+        for ptp in packet:
+            self.handler.get_socket().sendto(ptp.serialize(), client_access)
+
+    def acknowledgment_packet(self, packet_ack):
         pass

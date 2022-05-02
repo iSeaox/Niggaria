@@ -38,6 +38,8 @@ class Launcher:
         self.waiting_response = False
         self.server_response = None
 
+        self.partial_packets = {}
+
     def start(self, screen):
         self.__screen = screen
         self.is_active = True
@@ -74,46 +76,78 @@ class Launcher:
                         self.text_fields[(focused_id + 1) % len(self.text_fields)].is_focus = True
 
         # ----- PACKET HANDLING -------
+
+        # if(len(self.client.buffer) > 0):
+        #     print(self.client.buffer)
+
         while(len(self.client.buffer) > 0):
             raw = self.client.buffer[0]
-            packet = json.loads(raw[0].decode())
+            if(raw[0][0] == 0xFF):
+                data = raw[0]
+                total = int.from_bytes(data[1:5], "little")
+                number = int.from_bytes(data[5:9], "little")
+                uid = data[9:17].decode("utf-8")
+                partial_data = data[17:].decode("utf-8")
+                if(not(uid in self.partial_packets.keys())):
+                    self.partial_packets[uid] = [""] * total
+                    print(len(self.partial_packets[uid]))
 
-            if(packet["type"] == "profile_transfert_packet"):
-                if(packet["authorized"]):
-                    self.client.profile = player_profile.deserialize(packet["profile"])
-                else:
-                    self.logger.log(packet["message"], subject="refused")
-                    self.server_response = packet["message"]
-                    self.waiting_response = False
+                self.partial_packets[uid][number] = partial_data
 
-            elif(packet["type"] == "player_transfert_packet"):
-                self.client.set_player(serializable.deserialize(packet["player"]))
+                if(number + 1 == total):
+                    assemble_world = ""
+                    for ptp in self.partial_packets[uid]:
+                        assemble_world += ptp
 
-                self.logger.log("player entity received", subject="load")
+                    world = serializable.deserialize(json.loads(assemble_world))
 
-            elif(packet["type"] == "world_transfert_packet"):
-                world = serializable.deserialize(packet["world"])
-                world.chunks = [0] * world.size
-
-                self.client.set_world(world)
-                self.logger.log("------------- WORLD -------------")
-                self.logger.log("world received", subject="load")
-
-                self.client.get_world().set_local_player(self.client.get_player())
-                self.client.get_world_updater().local_player = self.client.get_player()
-                self.client.get_entity_updater().local_player = self.client.get_player()
-                self.logger.log("world player linked with local player entity", subject="load")
-
-            elif(packet["type"] == "chunk_transfert_packet"):
-                chunk = serializable.deserialize(packet["chunk"])
-                self.client.get_world().chunks[int(packet["id"])] = chunk
-                self.logger.log("chunk number " + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
-
-                if(int(packet["id"]) == self.client.get_world().size - 1):
-                    self.is_active = False
+                    self.client.set_world(world)
+                    self.client.get_world().set_local_player(self.client.get_player())
+                    self.client.get_world_updater().local_player = self.client.get_player()
+                    self.client.get_entity_updater().local_player = self.client.get_player()
                     self.logger.log("---------------------------------")
                     self.client.texture_handler.load_textures(part="block")
+                    self.is_active = False
+            else:
+                packet = json.loads(raw[0].decode())
 
+                if(packet["type"] == "profile_transfert_packet"):
+                    if(packet["authorized"]):
+                        self.client.profile = player_profile.deserialize(packet["profile"])
+                    else:
+                        self.logger.log(packet["message"], subject="refused")
+                        self.server_response = packet["message"]
+                        self.waiting_response = False
+
+                elif(packet["type"] == "player_transfert_packet"):
+                    self.client.set_player(serializable.deserialize(packet["player"]))
+
+                    self.logger.log("player entity received", subject="load")
+
+                elif(packet["type"] == "world_transfert_packet"):
+                    pass
+                    # world = serializable.deserialize(packet["world"])
+                    # world.chunks = [0] * world.size
+                    #
+                    # self.client.set_world(world)
+                    # self.logger.log("------------- WORLD -------------")
+                    # self.logger.log("world received", subject="load")
+                    #
+                    # self.client.get_world().set_local_player(self.client.get_player())
+                    # self.client.get_world_updater().local_player = self.client.get_player()
+                    # self.client.get_entity_updater().local_player = self.client.get_player()
+                    # self.logger.log("world player linked with local player entity", subject="load")
+
+                elif(packet["type"] == "chunk_transfert_packet"):
+                    pass
+                    # chunk = serializable.deserialize(packet["chunk"])
+                    # self.client.get_world().chunks[int(packet["id"])] = chunk
+                    # self.logger.log("chunk number " + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
+                    #
+                    # if(int(packet["id"]) == self.client.get_world().size - 1):
+                    #     self.is_active = False
+                    #     self.logger.log("---------------------------------")
+                    #     self.client.texture_handler.load_textures(part="block")
 
             self.client.buffer = self.client.buffer[1:]
         # -----------------------------

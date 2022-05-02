@@ -33,7 +33,7 @@ class Server:
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.__socket.bind((self.__ip_addr, self.__port))
 
-        self.__net_buffer_size = 1024
+        self.__net_buffer_size = 4096
         self.buffer = []
         self.logger = logger
         self.net_listener = net_listener.NetListener(self)
@@ -83,14 +83,14 @@ class Server:
                     raw_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
                     self.__socket.sendto(str.encode(raw_packet), packet[1])
 
-                    huge_packet_transmitter.HugePacketTransmitter(self).transmit_packet(str(self.server_world.full_serialize()), None)
+                    huge_packet_transmitter.HugePacketTransmitter(self).transmit_packet(str(self.server_world.full_serialize()), packet[1])
 
-                    raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), packet[1])
-
-                    for i in range(self.server_world.size):
-                        raw_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk = self.server_world.chunks[i], id = i).serialize()
-                        self.__socket.sendto(str.encode(raw_packet), packet[1])
+                    # raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
+                    # self.__socket.sendto(str.encode(raw_packet), packet[1])
+                    #
+                    # for i in range(self.server_world.size):
+                    #     raw_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk = self.server_world.chunks[i], id = i).serialize()
+                    #     self.__socket.sendto(str.encode(raw_packet), packet[1])
                     # ---- DATA FOR OTHERS ----
                     c_action = connection_action.ConnectionAction(new_player_entity, connection_action.JOIN_SERVER)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(c_action).serialize()
