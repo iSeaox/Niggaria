@@ -12,10 +12,11 @@ class TCPPipeLine(threading.Thread):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind('localhost', SOCKET_PORT)
 
-        self.wainting_transfert = []
+        self.waiting_transfert = []
         self.is_listenning = True
 
     def run(self):
 
         while(self.is_listenning):
-            self.socket.listen(len())
+            self.socket.listen(len(self.waiting_transfert))
+            # Créer un nouveau objet Thread qui exécute le traitement 
