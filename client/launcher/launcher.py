@@ -84,32 +84,16 @@ class Launcher:
         while(len(self.client.buffer) > 0):
             raw = self.client.buffer[0]
             if(raw[0][0] == 0xFF):
-                print(hashlib.sha256(raw[0]).hexdigest())
-                data = raw[0]
-                total = int.from_bytes(data[1:5], "little")
-                number = int.from_bytes(data[5:9], "little")
-                uid = data[9:17].decode("utf-8")
-                partial_data = data[17:].decode("utf-8")
-                if(not(uid in self.partial_packets.keys())):
-                    self.partial_packets[uid] = [""] * total
-                    print(len(self.partial_packets[uid]))
 
-                self.partial_packets[uid][number] = partial_data
-
-                if(number + 1 == total):
-                    assemble_world = ""
-                    for ptp in self.partial_packets[uid]:
-                        assemble_world += ptp
-
-                    world = serializable.deserialize(json.loads(assemble_world))
-
-                    self.client.set_world(world)
-                    self.client.get_world().set_local_player(self.client.get_player())
-                    self.client.get_world_updater().local_player = self.client.get_player()
-                    self.client.get_entity_updater().local_player = self.client.get_player()
-                    self.logger.log("---------------------------------")
-                    self.client.texture_handler.load_textures(part="block")
-                    self.is_active = False
+                    # world = serializable.deserialize(json.loads(assemble_world))
+                    #
+                    # self.client.set_world(world)
+                    # self.client.get_world().set_local_player(self.client.get_player())
+                    # self.client.get_world_updater().local_player = self.client.get_player()
+                    # self.client.get_entity_updater().local_player = self.client.get_player()
+                    # self.logger.log("---------------------------------")
+                    # self.client.texture_handler.load_textures(part="block")
+                    # self.is_active = False
             else:
                 packet = json.loads(raw[0].decode())
 
