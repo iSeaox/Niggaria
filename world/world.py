@@ -1,4 +1,5 @@
 import sys
+import struct
 import matplotlib.pyplot as plt
 
 import utils.serializable as serializable
@@ -9,6 +10,8 @@ import world.chunk as chunk
 import world.generator.noise as noise
 
 import block.solid.dirt as b_dirt
+
+import utils.file_utils as file_utils
 
 CHUNK_WIDTH = 32
 
@@ -116,3 +119,35 @@ class World(serializable.Serializable):
 
     def full_serialize(self):
         return super().serialize()
+
+    def to_bytes(self):
+
+
+    def to_files(self, path):
+        files_data = {}
+        for i in range(len(self.chunks)):
+            working_file = file_utils.create_file(path + "\chunk\chunk_"+str(i)+".chu")
+
+            with working_file.open("wb+") as file:
+                file.seek(0)
+                file.write(self.chunks[i].to_file())
+
+        working_file = file_utils.create_file(path + "\world_desc.dat")
+        with working_file.open("wb+") as file:
+            file.seek(0)
+            content = b'world_desc'
+
+            # | size (2 bytes) |
+
+            content += struct.pack("H", self.size)
+            file.write(content)
+
+        working_file = file_utils.create_file(path + "\entities.dat")
+        with working_file.open("wb+") as file:
+            file.seek(0)
+            header = b'entities_file'
+            # | len_entities (2 bytes) |
+            header += struct.pack("H", len(self.entities))
+            content = b''
+            for entity in self.entities:
+                content += entity.to_bytes()

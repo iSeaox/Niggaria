@@ -1,6 +1,7 @@
 import socket
 import time
 import json
+import hashlib
 
 import server.packet.profile_transfert_packet as profile_transfert_packet
 import server.packet.player_transfert_packet as player_transfert_packet
@@ -11,7 +12,6 @@ import server.packet.chunk_transfert_packet as chunk_transfert_packet
 import security.profile_handler as profile_handler
 
 import network.net_listener as net_listener
-import network.packet.huge_packet_transmitter as huge_packet_transmitter
 
 import entity.human.player as player
 
@@ -40,8 +40,11 @@ class Server:
         self.net_listener.start()
 
         self.__connected_players = {}
+
         self.server_world = world.World()
         self.server_world.gen()
+
+        self.server_world.to_files(r'.\data\server\world')
 
 
     def start(self):
@@ -83,8 +86,8 @@ class Server:
                     raw_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
                     self.__socket.sendto(str.encode(raw_packet), packet[1])
 
-                    huge_packet_transmitter.HugePacketTransmitter(self).transmit_packet(str(self.server_world.full_serialize()), packet[1])
-
+                    # --------- INIT Wolrd transmission -------------
+                    
                     # raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
                     # self.__socket.sendto(str.encode(raw_packet), packet[1])
                     #

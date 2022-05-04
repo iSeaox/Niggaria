@@ -1,6 +1,7 @@
 import pygame
 import time
 import json
+import hashlib
 
 import entity.human.player as player
 
@@ -83,6 +84,7 @@ class Launcher:
         while(len(self.client.buffer) > 0):
             raw = self.client.buffer[0]
             if(raw[0][0] == 0xFF):
+                print(hashlib.sha256(raw[0]).hexdigest())
                 data = raw[0]
                 total = int.from_bytes(data[1:5], "little")
                 number = int.from_bytes(data[5:9], "little")

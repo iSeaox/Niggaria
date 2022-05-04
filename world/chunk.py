@@ -1,4 +1,5 @@
 import random
+import struct
 
 import utils.serializable as serializable
 
@@ -15,7 +16,7 @@ class Chunk(serializable.Serializable):
             self.x = self.chunk_x * self.chunk_width
 
         self.blocks = []
-        self.background_block = []
+        self.background_blocks = []
 
     def gen(self, noise):
         max_height = 40
@@ -29,3 +30,17 @@ class Chunk(serializable.Serializable):
                 self.blocks.append(b_dirt.Dirt(x, y - offset, property = temp))
 
         return self
+
+    def to_file(self):
+
+        # header
+        # | chunk_x (4 bytes) | len_blocks (4 bytes) | len_background_block (4 bytes) |
+
+        header = b'chunk_file'
+        header += struct.pack("III", self.chunk_x, len(self.blocks), len(self.background_blocks))
+
+        blocks_data = b''
+        for block in self.blocks:
+            blocks_data += block.to_bytes()
+
+        return header + blocks_data

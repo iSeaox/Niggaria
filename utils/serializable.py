@@ -30,6 +30,9 @@ class Serializable:
 
         return json_dict
 
+    def to_bytes(self):
+        pass
+
 
 def deserialize(json_dict):
     if("extended_type" in json_dict.keys()):
