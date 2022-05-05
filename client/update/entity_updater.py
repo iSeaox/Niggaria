@@ -33,7 +33,7 @@ class EntityUpdater:
         self.local_player.predicted_y += self.local_player.velocity[1] / fpt
 
         self.local_player.predicted_x += self.local_player.velocity[0] / fpt
-        self.local_player.predicted_x %= 192
+        self.local_player.predicted_x %= 320
 
         if(self.local_player.predicted_y < 25):
             self.local_player.predicted_y = 25

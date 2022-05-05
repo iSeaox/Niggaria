@@ -1,15 +1,18 @@
 import socket
 import time
 import json
+import hashlib
 
 import server.packet.profile_transfert_packet as profile_transfert_packet
 import server.packet.player_transfert_packet as player_transfert_packet
 import server.packet.action_transfert_packet as action_transfert_packet
 import server.packet.world_transfert_packet as world_transfert_packet
+import server.packet.chunk_transfert_packet as chunk_transfert_packet
 
 import security.profile_handler as profile_handler
 
 import network.net_listener as net_listener
+import network.tcp_pipeline as tcp_pipeline
 
 import entity.human.player as player
 
@@ -28,18 +31,26 @@ class Server:
         self.__ip_addr = ip_addr
         self.__port = port
 
+        self.logger = logger
+
+        self.__net_buffer_size = 4096
+        self.buffer = []
+
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.__socket.bind((self.__ip_addr, self.__port))
 
-        self.__net_buffer_size = 1024
-        self.buffer = []
-        self.logger = logger
         self.net_listener = net_listener.NetListener(self)
         self.net_listener.start()
 
+        self.tcp_pipeline = tcp_pipeline.TCPPipeLineServer(self.logger, debug=True)
+        self.tcp_pipeline.start()
+
         self.__connected_players = {}
+
         self.server_world = world.World()
         self.server_world.gen()
+
+        self.server_world.to_files(r'.\data\server\world')
 
 
     def start(self):
@@ -57,8 +68,8 @@ class Server:
     def tick(self):
         move_actions = {}
 
-        if(len(self.buffer) > 0):
-            print(self.buffer)
+        # if(len(self.buffer) > 0):
+        #     print(self.buffer)
 
         while(len(self.buffer) > 0):
             packet = self.buffer[0]
@@ -81,8 +92,14 @@ class Server:
                     raw_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
                     self.__socket.sendto(str.encode(raw_packet), packet[1])
 
-                    raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), packet[1])
+                    # --------- INIT Wolrd transmission -------------
+                    self.
+                    # raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
+                    # self.__socket.sendto(str.encode(raw_packet), packet[1])
+                    #
+                    # for i in range(self.server_world.size):
+                    #     raw_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk = self.server_world.chunks[i], id = i).serialize()
+                    #     self.__socket.sendto(str.encode(raw_packet), packet[1])
                     # ---- DATA FOR OTHERS ----
                     c_action = connection_action.ConnectionAction(new_player_entity, connection_action.JOIN_SERVER)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(c_action).serialize()
