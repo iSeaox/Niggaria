@@ -84,7 +84,7 @@ class Launcher:
         while(len(self.client.buffer) > 0):
             raw = self.client.buffer[0]
             if(raw[0][0] == 0xFF):
-
+                    self.client.tcp_pipeline.start()
                     # world = serializable.deserialize(json.loads(assemble_world))
                     #
                     # self.client.set_world(world)
@@ -159,18 +159,18 @@ class Launcher:
             resp_code = self.server_response.split(":")[0]
             if(resp_code == profile_handler.WRONG_PASSWORD_CODE):
                 s_cross = self.client.texture_handler.get_texture("gui.launcher.icons.red_cross")
-                self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef = 2), (self.t_field_pass.x + self.t_field_pass.width + 10, self.t_field_pass.y + 3))
+                self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef=2), (self.t_field_pass.x + self.t_field_pass.width + 10, self.t_field_pass.y + 3))
 
             elif(resp_code == profile_handler.PROFILE_NOT_FOUND_CODE):
                 s_cross = self.client.texture_handler.get_texture("gui.launcher.icons.red_cross")
-                self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef = 2), (self.t_field.x + self.t_field.width + 10, self.t_field.y + 3))
+                self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef=2), (self.t_field.x + self.t_field.width + 10, self.t_field.y + 3))
 
     def trigger_button(self, click_type):
         if(not(self.waiting_response)):
             self.waiting_response = True
 
             packet_data = init_packet.InitPacket(self.t_field.content, self.t_field_pass.content).serialize()
-            self.client.get_socket().sendto(str.encode(packet_data), self.client.server_acces)
+            self.client.get_socket().sendto(str.encode(packet_data), self.client.server_access)
 
             if(not(self.client.net_listener.is_start)):
                 self.client.net_listener.start()

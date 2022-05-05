@@ -121,7 +121,7 @@ class World(serializable.Serializable):
         return super().serialize()
 
     def to_bytes(self):
-
+        pass
 
     def to_files(self, path):
         files_data = {}

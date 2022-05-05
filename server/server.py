@@ -12,6 +12,7 @@ import server.packet.chunk_transfert_packet as chunk_transfert_packet
 import security.profile_handler as profile_handler
 
 import network.net_listener as net_listener
+import network.tcp_pipeline as tcp_pipeline
 
 import entity.human.player as player
 
@@ -30,14 +31,19 @@ class Server:
         self.__ip_addr = ip_addr
         self.__port = port
 
-        self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.__socket.bind((self.__ip_addr, self.__port))
+        self.logger = logger
 
         self.__net_buffer_size = 4096
         self.buffer = []
-        self.logger = logger
+
+        self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.__socket.bind((self.__ip_addr, self.__port))
+
         self.net_listener = net_listener.NetListener(self)
         self.net_listener.start()
+
+        self.tcp_pipeline = tcp_pipeline.TCPPipeLineServer(self.logger, debug=True)
+        self.tcp_pipeline.start()
 
         self.__connected_players = {}
 
@@ -87,7 +93,7 @@ class Server:
                     self.__socket.sendto(str.encode(raw_packet), packet[1])
 
                     # --------- INIT Wolrd transmission -------------
-                    
+                    self.
                     # raw_packet = world_transfert_packet.WorldTransfertPacket(self.server_world).serialize()
                     # self.__socket.sendto(str.encode(raw_packet), packet[1])
                     #
