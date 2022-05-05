@@ -19,7 +19,9 @@ import action.client.key_action as key_action
 
 import world.world as world
 
+
 SERVER_TPS = 20
+
 
 class Server:
     def __init__(self, ip_addr, port, logger):
@@ -38,9 +40,9 @@ class Server:
         self.net_listener.start()
 
         self.__connected_players = {}
+        self.__connected_players_data = {}
         self.server_world = world.World()
         self.server_world.gen()
-
 
     def start(self):
         self.__run = True
@@ -49,14 +51,12 @@ class Server:
 
             self.tick()
 
-            elapsed = (time.time_ns() / 1_000_000_000 - begin)
+            elapsed = (time.time_ns() / 1_000_000_000) - begin
             waiting_time = (1 / self.__tps) - elapsed
             if(waiting_time > 0):
-                time.sleep(waiting_time)
+                sleep(waiting_time)
 
     def tick(self):
-        move_actions = {}
-
         if(len(self.buffer) > 0):
             print(self.buffer)
 
@@ -90,6 +90,8 @@ class Server:
                         if(player_info["entity"].instance_uid != new_player_entity.instance_uid):
                             self.__socket.sendto(str.encode(raw_packet), player_info["access"])
 
+                    self.__connected_players_data[profile.uuid] = {'right': [False, -1], 'left': [False, -1], 'jump': [False, -1]}
+
                     self.logger.log(new_player_entity.name + " joined the game", subject="join")
 
             elif(data["type"] == "quit_packet"):
@@ -109,28 +111,70 @@ class Server:
                 if(data["action"]["type"] == "key_action"):
                     pressed_key = data["action"]["key"]
                     if(pressed_key == key_action.KEY_RIGHT):
-                        concerned_player.x += 0.2
+                        if data['action']['action'] == key_action.ACTION_DOWN:
+                            self.__connected_players_data[data['uuid']]['right'] = [True, data['timestamp']]
+                        else:
+                            time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['right'][1]
+                            concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
+
+                            if self.__connected_players_data[data['uuid']]['left'][0]:
+                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['left'][1]
+                                concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
+                                self.__connected_players_data[data['uuid']]['left'][1] = data['timestamp']
+
+
+                            concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
+
+                            em_action = entity_move_action.EntityMoveAction(concerned_player)
+                            em_action.timestamp = data["timestamp"]
+                            raw_packet = action_transfert_packet.ActionTransfertPacket(em_action, True).serialize()
+                            self.__socket.sendto(str.encode(raw_packet), packet[1])
+
+                            self.__connected_players_data[data['uuid']]['right'][0] = False
+
                     elif(pressed_key == key_action.KEY_LEFT):
-                        concerned_player.x -= 0.2
+                        if data['action']['action'] == key_action.ACTION_DOWN:
+                            self.__connected_players_data[data['uuid']]['left'] = [True, data['timestamp']]
+                        else:
+                            if self.__connected_players_data[data['uuid']]['right'][0]:
+                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['right'][1]
+                                concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
+                                self.__connected_players_data[data['uuid']]['right'][1] = data['timestamp']
 
-                    concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
+                            time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['left'][1]
+                            concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
 
-                em_action = entity_move_action.EntityMoveAction(concerned_player)
-                em_action.timestamp = data["timestamp"]
-                raw_packet = action_transfert_packet.ActionTransfertPacket(em_action, True).serialize()
-                self.__socket.sendto(str.encode(raw_packet), packet[1])
 
-                em_action.timestamp = time.time_ns()
-                move_actions[em_action.entity.instance_uid] = (em_action, data["uuid"])
+                            concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
+
+                            em_action = entity_move_action.EntityMoveAction(concerned_player)
+                            em_action.timestamp = data["timestamp"]
+                            raw_packet = action_transfert_packet.ActionTransfertPacket(em_action, True).serialize()
+                            self.__socket.sendto(str.encode(raw_packet), packet[1])
+
+                            self.__connected_players_data[data['uuid']]['left'][0] = False
 
             self.buffer = self.buffer[1:]
 
-        for move_action in move_actions.values():
-            for other_player_uuid in self.__connected_players.keys():
-                if(other_player_uuid != move_action[1]):
-                    raw_packet = action_transfert_packet.ActionTransfertPacket(move_action[0]).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), self.__connected_players[other_player_uuid]["access"])
+        for player_uuid in self.__connected_players.keys():
+            concerned_player = self.__connected_players[player_uuid]['entity']
 
+            if self.__connected_players_data[player_uuid]['right'][0]:
+                time_elapsed = time.time_ns() - self.__connected_players_data[player_uuid]['right'][1]
+                concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
+                self.__connected_players_data[player_uuid]['right'][1] = time.time_ns()
+
+            if self.__connected_players_data[player_uuid]['left'][0]:
+                time_elapsed = time.time_ns() - self.__connected_players_data[player_uuid]['left'][1]
+                concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
+                self.__connected_players_data[player_uuid]['left'][1] = time.time_ns()
+
+            for other_player_uuid in self.__connected_players.keys():
+                if player_uuid != other_player_uuid:
+                    em_action = entity_move_action.EntityMoveAction(self.__connected_players[other_player_uuid]['entity'])
+                    em_action.timestamp = time.time_ns()
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.__connected_players[player_uuid]['access'])
 
 
     def get_socket(self):
