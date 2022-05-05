@@ -153,14 +153,12 @@ class Client:
                         self.__entity_updater.push_action(em_action.entity, em_action)
 
             self.buffer = self.buffer[1:]
-        # -------------------------------------
 
         self.__world_updater.update(self.__world)
         self.view.check()
 
     def render(self, screen):
         screen.fill((0, 0, 0))
-
         world_renderer.render_world(screen, self.__world, self.view, self.texture_handler)
 
     def get_socket(self):
