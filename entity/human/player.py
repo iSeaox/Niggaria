@@ -1,5 +1,4 @@
 import entity.entity as entity
-import security.player_profile as player_profile
 from pygame import Vector2
 
 
