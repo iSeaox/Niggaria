@@ -7,7 +7,7 @@ from server.server import SERVER_TPS
 import network.net_listener as net_listener
 
 import utils.serializable as serializable
-import utils.time as time
+import utils.clock as time
 
 import client.packet.action_transfert_packet as action_transfert_packet
 import client.packet.quit_packet as quit_packet

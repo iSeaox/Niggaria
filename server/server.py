@@ -16,7 +16,7 @@ import action.server.connection_action as connection_action
 import action.server.entity_move_action as entity_move_action
 import action.client.key_action as key_action
 
-import utils.time as time
+import utils.clock as time
 
 import world.world as world
 
@@ -31,7 +31,7 @@ class Server:
         self.__tps = SERVER_TPS
         self.__ip_addr = ip_addr
         self.__port = port
-        self.__clock = time.Clock(SERVER_TPS)
+        self.__clock = time
 
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.__socket.bind((self.__ip_addr, self.__port))
