@@ -31,7 +31,7 @@ class Server:
         self.__tps = SERVER_TPS
         self.__ip_addr = ip_addr
         self.__port = port
-        self.__clock = time
+        self.__clock = time.Clock(SERVER_TPS)
 
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.__socket.bind((self.__ip_addr, self.__port))
