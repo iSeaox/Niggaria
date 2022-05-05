@@ -119,17 +119,14 @@ class Client:
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
-                # elif(event.key == 32):
-                #     self.__key_buffer[key_action.KEY_JUMP] = False
-                #
-                #     new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
-                #     self.__entity_updater.push_local_action(new_action)
-                #     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                #     self.__socket.sendto(str.encode(raw_packet), self.server_access)
+                elif event.key == 32:
+                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
-        # --------- PACKET HANDLING ---------
-        # if(len(self.buffer) > 0):
-        #     print(self.buffer)
+        if self.__debug and len(self.buffer) > 0:
+            self.logger.log(self.buffer)
 
         while len(self.buffer) > 0:
             raw = self.buffer[0]
