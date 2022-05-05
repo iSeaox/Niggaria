@@ -96,15 +96,10 @@ class Client:
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
-                # elif(event.key == 32):
-                #     self.__key_buffer[key_action.KEY_JUMP] = True
-                #     if(self.player.predicted_y == 25):
-                #         pass
-                #         self.player.velocity[1] = 0.9
-                #
-                #     new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_DOWN)
-                #     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                #     self.__socket.sendto(str.encode(raw_packet), self.server_access)
+                elif event.key == 32:
+                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_DOWN)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
             elif event.type == pygame.KEYUP:
                 if event.key == 100:
