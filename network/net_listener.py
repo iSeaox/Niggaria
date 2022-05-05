@@ -6,12 +6,13 @@ class NetListener(threading.Thread):
         self.__handler = handler
         self.__listen = True
         self.is_start = False
+        self.__net_buffer_size = 1024 * 32
 
     def run(self):
         self.is_start = True
         self.__handler.logger.log("Listening...")
         while(self.__listen):
-            received_packet = self.__handler.get_socket().recvfrom(self.__handler.get_net_buffer_size())
+            received_packet = self.__handler.get_socket().recvfrom(self.__net_buffer_size)
             self.__handler.buffer.append(received_packet)
         self.__handler.logger.log("End of listening", object="stop")
 
