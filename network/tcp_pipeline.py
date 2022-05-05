@@ -50,7 +50,7 @@ class TCPPipeLineServer(threading.Thread):
 
         self.socket.close()
 
-    def send_packet(self, dest_addr, packet):
+    def send_packet(self, server_player, packet):
         if(dest_addr in self.listener_pool.keys()):
             self.listener_pool[dest_addr].connection.sendall(packet)
 

@@ -45,7 +45,8 @@ class Server:
         self.tcp_pipeline = tcp_pipeline.TCPPipeLineServer(self.logger, debug=True)
         self.tcp_pipeline.start()
 
-        self.__connected_players = {}
+        self.__connected_players = []
+        self.__connected_players_OUTDATED = {}
 
         self.server_world = world.World()
         self.server_world.gen()
@@ -77,7 +78,7 @@ class Server:
             if(data["type"] == "init_packet"):
                 self.__player_access = packet[1]
                 (ath, msg, profile) = profile_handler.use_profile(data["user"], data["password"])
-                if(ath and (profile.uuid in self.__connected_players.keys())):
+                if(ath and (profile.uuid in self.__connected_players_OUTDATED.keys())):
                     (ath, msg, profile) = (False, profile_handler.ALREADY_CONNECTED_CODE+ "already connected", None)
 
                 raw_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
@@ -85,7 +86,7 @@ class Server:
 
                 if(ath):
                     new_player_entity = player.Player(profile.uuid, profile.user)
-                    self.__connected_players[profile.uuid] = {"access": packet[1], "entity": new_player_entity}
+                    self.__connected_players_OUTDATED[profile.uuid] = {"access": packet[1], "entity": new_player_entity}
                     self.server_world.add_player_entity(new_player_entity)
 
                     # ---- DATA FOR JOINING PLAYER ----
@@ -103,26 +104,26 @@ class Server:
                     # ---- DATA FOR OTHERS ----
                     c_action = connection_action.ConnectionAction(new_player_entity, connection_action.JOIN_SERVER)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(c_action).serialize()
-                    for player_info in self.__connected_players.values():
+                    for player_info in self.__connected_players_OUTDATED.values():
                         if(player_info["entity"].instance_uid != new_player_entity.instance_uid):
                             self.__socket.sendto(str.encode(raw_packet), player_info["access"])
 
                     self.logger.log(new_player_entity.name + " joined the game", subject="join")
 
             elif(data["type"] == "quit_packet"):
-                if(data["profile"]["uuid"] in self.__connected_players.keys()):
-                    c_action = connection_action.ConnectionAction(self.__connected_players[data["profile"]["uuid"]]["entity"], connection_action.QUIT_SERVER)
+                if(data["profile"]["uuid"] in self.__connected_players_OUTDATED.keys()):
+                    c_action = connection_action.ConnectionAction(self.__connected_players_OUTDATED[data["profile"]["uuid"]]["entity"], connection_action.QUIT_SERVER)
 
-                    self.server_world.remove_player_entity(self.__connected_players[data["profile"]["uuid"]]["entity"])
-                    self.__connected_players.pop(data["profile"]["uuid"])
+                    self.server_world.remove_player_entity(self.__connected_players_OUTDATED[data["profile"]["uuid"]]["entity"])
+                    self.__connected_players_OUTDATED.pop(data["profile"]["uuid"])
                     self.logger.log(data["profile"]["user"] + " left the game", subject="quit")
                     raw_packet = action_transfert_packet.ActionTransfertPacket(c_action).serialize()
-                    for player_info in self.__connected_players.values():
+                    for player_info in self.__connected_players_OUTDATED.values():
                         self.__socket.sendto(str.encode(raw_packet), player_info["access"])
 
 
             elif(data["type"] == "action_transfert_packet"):
-                concerned_player = self.__connected_players[data["uuid"]]["entity"]
+                concerned_player = self.__connected_players_OUTDATED[data["uuid"]]["entity"]
                 if(data["action"]["type"] == "key_action"):
                     pressed_key = data["action"]["key"]
                     if(pressed_key == key_action.KEY_RIGHT):
@@ -143,10 +144,10 @@ class Server:
             self.buffer = self.buffer[1:]
 
         for move_action in move_actions.values():
-            for other_player_uuid in self.__connected_players.keys():
+            for other_player_uuid in self.__connected_players_OUTDATED.keys():
                 if(other_player_uuid != move_action[1]):
                     raw_packet = action_transfert_packet.ActionTransfertPacket(move_action[0]).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), self.__connected_players[other_player_uuid]["access"])
+                    self.__socket.sendto(str.encode(raw_packet), self.__connected_players_OUTDATED[other_player_uuid]["access"])
 
 
 
