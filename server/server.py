@@ -149,7 +149,7 @@ class Server:
 
                             self.__connected_players_data[data['uuid']]['left'][0] = False
 
-            self.buffer.pop(0)
+            del self.buffer[0]
 
         for player_uuid in self.__connected_players.keys():
             concerned_player = self.__connected_players[player_uuid]['entity']
