@@ -6,6 +6,7 @@ import pygame
 from server.server import SERVER_TPS
 
 import network.net_listener as net_listener
+import network.tcp_pipeline as tcp_pipeline
 
 import utils.serializable as serializable
 
@@ -28,6 +29,8 @@ import action.client.key_action as key_action
 import action.server.connection_action as connection_action
 import action.server.entity_move_action as entity_move_action
 
+import world.world as world
+
 
 CLIENT_FPS = 60
 
@@ -38,7 +41,10 @@ def sleep(duration, get_now=time.perf_counter):
         now = get_now()
 
 class Client:
-    def __init__(self, server_acces, logger):
+    def __init__(self, server_access, logger):
+
+        self.debug_map_gen = True
+
         self.__run = False
         self.__fps = CLIENT_FPS
         self.__tps = SERVER_TPS
@@ -55,9 +61,9 @@ class Client:
         self.__actions_buffer = []
         self.__key_buffer = {0: False, 1: False, 2: False}
 
-        self.server_acces = server_acces
+        self.server_access = server_access
         self.logger = logger
-        self.__net_buffer_size = 1024 * 32
+        self.__net_buffer_size = 1024 * 256
 
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.net_listener = net_listener.NetListener(self)
@@ -69,11 +75,17 @@ class Client:
 
         self.view = None
 
+        self.tcp_pipeline = tcp_pipeline.TCPPipelineClient(self.logger, ("localhost", 20002), self, debug=True)
+
     def start(self):
         self.__run = True
 
         pygame.init()
-        screen = pygame.display.set_mode((1080, 720))
+
+        screen_info = pygame.display.Info()
+        self.logger.log("the screen size is "+ str(screen_info.current_w) +":"+ str(screen_info.current_h), subject="info")
+
+        screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h))
         pygame.display.set_caption("Niggaria")
 
         self.texture_handler.load_textures(part="gui")
@@ -104,7 +116,7 @@ class Client:
                 sleep(waiting_time)
 
         raw_packet = quit_packet.QuitPacket(self.profile).serialize()
-        self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+        self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
     def update(self, tick, fpt):
         for event in pygame.event.get():
@@ -117,7 +129,7 @@ class Client:
                     new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_DOWN)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+                    self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
                 elif(event.key == 113):
                     self.__key_buffer[key_action.KEY_LEFT] = True
@@ -125,7 +137,7 @@ class Client:
                     new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_DOWN)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+                    self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
                 # elif(event.key == 32):
                 #     self.__key_buffer[key_action.KEY_JUMP] = True
@@ -144,14 +156,14 @@ class Client:
                     new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_UP)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+                    self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
                 elif(event.key == 113):
                     self.__key_buffer[key_action.KEY_LEFT] = False
                     new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_UP)
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+                    self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
                 # elif(event.key == 32):
                 #     self.__key_buffer[key_action.KEY_JUMP] = False
@@ -160,6 +172,17 @@ class Client:
                 #     self.__entity_updater.push_local_action(new_action)
                 #     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                 #     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
+                
+        if(self.debug_map_gen):
+            speed = 2
+            if(pygame.key.get_pressed()[1073741903]):
+                self.view.pos = (self.view.pos[0] + speed, self.view.pos[1])
+            elif(pygame.key.get_pressed()[1073741904]):
+                self.view.pos = (self.view.pos[0] - speed, self.view.pos[1])
+            elif(pygame.key.get_pressed()[1073741905]):
+                self.view.pos = (self.view.pos[0], self.view.pos[1] - speed)
+            elif(pygame.key.get_pressed()[1073741906]):
+                self.view.pos = (self.view.pos[0], self.view.pos[1] + speed)
 
         # --------- PACKET HANDLING ---------
         # if(len(self.buffer) > 0):
@@ -193,7 +216,12 @@ class Client:
         # -------------------------------------
 
         self.__world_updater.update(self.__world, tick, fpt)
-        self.view.check()
+
+        if(not(self.debug_map_gen)):
+            self.view.check()
+        else:
+            cur_pos = self.view.pos
+            self.view.pos = (cur_pos[0] % (self.view.world_size * world.CHUNK_WIDTH), cur_pos[1])
 
     def tick(self):
         GRAVITY_INTENSITY = 0.13
