@@ -2,6 +2,8 @@ import struct
 
 import utils.serializable as serializable
 import utils.uid_generator as uid_generator
+from pygame import Vector2
+
 
 ABSTRACT_ENTITY = 0
 PLAYER_ENTITY = 1
@@ -11,6 +13,10 @@ class Entity(serializable.Serializable):
         self.type = "abstract_entity"
         self.id = ABSTRACT_ENTITY
         self.instance_uid = uid_generator.gen_uid(8)
+
+        # self.position = Vector2(0, 0)
+        # self.velocity = Vector2(0, 0)
+        # self.acceleration = Vector2(0, 0)
 
         self.x = 0
         self.y = 0

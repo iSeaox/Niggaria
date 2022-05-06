@@ -25,6 +25,7 @@ class World(serializable.Serializable):
 
     def gen(self):
         nb_point = 7
+				
         gen_noise = noise.gen_smooth_noise(nb_point, (self.size * CHUNK_WIDTH) // (nb_point - 1), diff_max=2)
         gen_noise_bis = noise.gen_smooth_noise(nb_point * 2, (self.size * CHUNK_WIDTH) // (nb_point - 1) // 6, diff_max=2)
 

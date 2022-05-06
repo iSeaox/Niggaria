@@ -15,28 +15,13 @@ class EntityUpdater:
         self.local_player = None
 
     def update(self, entities, tick, fpt):
-
-        # ------- PLAYER WHO PLAY ON CLIENT --------
-        # self.local_player.predicted_x = self.local_player.x
-        # self.local_player.predicted_y = self.local_player.y
-
-        # for action in self.local_buffer:
-        #     if(action.type == "key_action"):
-        #         if(action.key == key_action.KEY_RIGHT):
-        #             self.local_player.predicted_x += 0.2
-        #         elif(action.key == key_action.KEY_LEFT):
-        #             self.local_player.predicted_x -= 0.2
-        #
-        #         self.local_player.predicted_x %= 192
-
-
-        self.local_player.predicted_y += self.local_player.velocity[1] / fpt
-
-        self.local_player.predicted_x += self.local_player.velocity[0] / fpt
-        self.local_player.predicted_x %= 320
-
-        if(self.local_player.predicted_y < 25):
+        self.local_player.predicted_y += self.local_player.predicted_velocity[1]
+        if self.local_player.predicted_y < 25:
             self.local_player.predicted_y = 25
+
+        self.local_player.predicted_x += self.local_player.predicted_velocity[0]
+        self.local_player.predicted_x %= 192
+
         # -------------------------------------------
         for entity_uid in entities.keys():
             if(entity_uid != self.local_player.instance_uid):
@@ -79,23 +64,28 @@ class EntityUpdater:
                 concerned_entity.predicted_x = concerned_entity.x
                 concerned_entity.predicted_y = concerned_entity.y
 
+
     def push_local_action(self, action):
         if(action.type == "entity_move_action"):
-            # self.local_player.x = action.entity.x
-            # self.local_player.y = action.entity.y
-
-            i = 0
-            temp = []
-            while(i < len(self.local_buffer)):
-                if(self.local_buffer[i].type != "key_action" and self.local_buffer[i].timestamp > action.timestamp):
-                    temp.append(self.local_buffer[i])
-                i += 1
-            self.local_buffer = temp
+            print(f'SELF : {action.entity.x} {action.entity.y}')
+            self.local_player.x, self.local_player.y = self.local_player.predicted_x, self.local_player.predicted_y = action.entity.x, action.entity.y
+            self.local_player.velocity = action.entity.velocity
         else:
-            self.local_buffer.append(action)
+            if(action.type == "key_action"):
+                if action.action == key_action.ACTION_DOWN:
+                    if action.key == key_action.KEY_RIGHT:
+                        self.local_player.predicted_velocity[0] += 0.2
+                    else:
+                        self.local_player.predicted_velocity[0] += -0.2
+                else:
+                    if action.key == key_action.KEY_RIGHT:
+                        self.local_player.predicted_velocity[0] += -0.2
+                    else:
+                        self.local_player.predicted_velocity[0] += 0.2
 
 
     def push_action(self, entity, action):
         if(not(entity.instance_uid in self.buffers.keys())):
             self.buffers[entity.instance_uid] = []
         self.buffers[entity.instance_uid].append((time.time_ns(), action))
+        print(f'OTHER : {action.entity.x} {action.entity.y}')
