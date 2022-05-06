@@ -13,10 +13,14 @@ import client.gui.clickable.clickable as clickable
 import client.gui.clickable.text_field as text_field
 import client.gui.text_renderer as text_renderer
 
+import network.tcp_preprocessor as tcp_preprocessor
+
 import security.player_profile as player_profile
 import security.profile_handler as profile_handler
 
 import world.world as world
+
+TIMEOUT = 5 # time out pour la réponse server
 
 class Launcher:
 
@@ -81,10 +85,27 @@ class Launcher:
         # if(len(self.client.buffer) > 0):
         #     print(self.client.buffer)
 
+        packets = tcp_preprocessor.preprocess_packet_queue(self.tcp_queue)
+        for data in packets:
+            packet = json.loads(data[1].decode())
+
+            if(packet["type"] == "profile_transfert_packet"):
+                if(packet["authorized"]):
+                    self.client.profile = player_profile.deserialize(packet["profile"])
+                else:
+                    self.logger.log(packet["message"], subject="refused")
+                    self.server_response = packet["message"]
+                    self.waiting_response = False
+
+            elif(packet["type"] == "player_transfert_packet"):
+                self.client.set_player(serializable.deserialize(packet["player"]))
+                self.logger.log("player entity received", subject="load")
+
+
         while(len(self.client.buffer) > 0):
             raw = self.client.buffer[0]
             if(raw[0][0] == 0xFF):
-                    self.client.tcp_pipeline.start()
+                    pass
                     # world = serializable.deserialize(json.loads(assemble_world))
                     #
                     # self.client.set_world(world)
@@ -97,20 +118,7 @@ class Launcher:
             else:
                 packet = json.loads(raw[0].decode())
 
-                if(packet["type"] == "profile_transfert_packet"):
-                    if(packet["authorized"]):
-                        self.client.profile = player_profile.deserialize(packet["profile"])
-                    else:
-                        self.logger.log(packet["message"], subject="refused")
-                        self.server_response = packet["message"]
-                        self.waiting_response = False
-
-                elif(packet["type"] == "player_transfert_packet"):
-                    self.client.set_player(serializable.deserialize(packet["player"]))
-
-                    self.logger.log("player entity received", subject="load")
-
-                elif(packet["type"] == "world_transfert_packet"):
+                if(packet["type"] == "world_transfert_packet"):
                     pass
                     # world = serializable.deserialize(packet["world"])
                     # world.chunks = [0] * world.size
@@ -142,6 +150,23 @@ class Launcher:
         for tf in self.text_fields:
             tf.check()
 
+    def trigger_button(self, click_type):
+        if(not(self.waiting_response)):
+            self.waiting_response = True
+            if(not(self.client.tcp_pipeline.is_alive())):
+                self.client.tcp_pipeline.start()
+
+
+            if(self.client.tcp_pipeline.ready_event.wait(TIMEOUT)): # on attend que le thread de liaison tcp soit prêt
+
+                packet_data = init_packet.InitPacket(self.t_field.content, self.t_field_pass.content).serialize()
+                self.client.tcp_pipeline.send_packet(str.encode(packet_data))
+
+                # if(not(self.client.net_listener.is_start)):
+                #     self.client.net_listener.start()
+            else:
+                print("SERVER NOT FOUND")
+
     def render(self):
         self.__screen.fill((0, 0, 0))
 
@@ -164,16 +189,6 @@ class Launcher:
             elif(resp_code == profile_handler.PROFILE_NOT_FOUND_CODE):
                 s_cross = self.client.texture_handler.get_texture("gui.launcher.icons.red_cross")
                 self.__screen.blit(self.client.texture_handler.resize(s_cross, size_coef=2), (self.t_field.x + self.t_field.width + 10, self.t_field.y + 3))
-
-    def trigger_button(self, click_type):
-        if(not(self.waiting_response)):
-            self.waiting_response = True
-
-            packet_data = init_packet.InitPacket(self.t_field.content, self.t_field_pass.content).serialize()
-            self.client.get_socket().sendto(str.encode(packet_data), self.client.server_access)
-
-            if(not(self.client.net_listener.is_start)):
-                self.client.net_listener.start()
 
     def get_fps(self):
         return self.__fps

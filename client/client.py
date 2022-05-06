@@ -2,6 +2,7 @@ import socket
 import time
 import json
 import pygame
+import queue
 
 from server.server import SERVER_TPS
 
@@ -65,17 +66,20 @@ class Client:
         self.logger = logger
         self.__net_buffer_size = 1024 * 256
 
+
+        self.buffer = []
+        self.tcp_queue = queue.Queue(maxsize=0)
+
         self.__socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.net_listener = net_listener.NetListener(self)
 
-        self.buffer = []
+        self.tcp_pipeline = tcp_pipeline.TCPPipelineClient(self.logger, self.tcp_queue, ("localhost", 20002), self, debug=True)
 
         self.texture_handler = texture_handler.TextureHandler(self.logger)
         self.__launcher = launcher.Launcher(self)
 
         self.view = None
 
-        self.tcp_pipeline = tcp_pipeline.TCPPipelineClient(self.logger, ("localhost", 20002), self, debug=True)
 
     def start(self):
         self.__run = True
@@ -172,7 +176,7 @@ class Client:
                 #     self.__entity_updater.push_local_action(new_action)
                 #     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
                 #     self.__socket.sendto(str.encode(raw_packet), self.server_acces)
-                
+
         if(self.debug_map_gen):
             speed = 2
             if(pygame.key.get_pressed()[1073741903]):
