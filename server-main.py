@@ -9,6 +9,6 @@ import utils.logger as logger
 log = logger.Logger(sys.stdout)
 log.log("Initialisation...")
 
-server_obj = server.Server("192.168.1.100", 20001, log)
+server_obj = server.Server("localhost", 20001, log)
 
 server_obj.start()

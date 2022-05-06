@@ -14,7 +14,7 @@ class EntityUpdater:
         self.local_buffer = []
         self.local_player = None
 
-    def update(self, entities):
+    def update(self, entities, tick, fpt):
         self.local_player.predicted_y += self.local_player.predicted_velocity[1]
         if self.local_player.predicted_y < 25:
             self.local_player.predicted_y = 25

@@ -1,4 +1,5 @@
 import entity.entity as entity
+import security.player_profile as player_profile
 from pygame import Vector2
 
 
@@ -10,4 +11,11 @@ class Player(entity.Entity):
         self.uuid = uuid
         self.name = name
 
-        self.position = Vector2(20, 30)
+        self.x = 20
+        self.y = 30
+
+        self.predicted_x = 20
+        self.predicted_y = 30
+
+        self.velocity = [0, 0]
+        self.predicted_velocity = [0, 0]
