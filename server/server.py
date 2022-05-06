@@ -54,7 +54,7 @@ class Server:
         self.tcp_pipeline.start()
 
         self.__connected_players = []
-				self.__connected_players_data = {}
+        self.__connected_players_data = {}
         self.__connected_players_OUTDATED = {}
 
         self.server_world = world.World()
