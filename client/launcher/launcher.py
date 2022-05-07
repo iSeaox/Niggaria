@@ -109,7 +109,7 @@ class Launcher:
                 self.client.get_world().chunks[int(packet["id"])] = chunk
                 self.logger.log("chunk number " + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
 
-                if(int(packet["id"]) == self.client.get_world().size - 1):
+                if int(packet["id"]) == self.client.get_world().size - 1:
                     self.is_active = False
                     self.logger.log("---------------------------------")
                     self.client.texture_handler.load_textures(part="block")

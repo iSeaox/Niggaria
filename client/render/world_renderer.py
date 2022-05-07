@@ -18,5 +18,4 @@ def render_world(screen, world, view, texture_handler):
 
     for chunk in displayed_chunk:
         for block in chunk.blocks:
-            euh = texture_handler.get_texture(block.__module__ + ":" + str(block.property))
-            screen.blit(euh,view.convert_position((block.x, block.y)))
+            screen.blit(texture_handler.get_texture(block.__module__ + ":" + str(block.property)), view.convert_position((block.x, block.y)))
