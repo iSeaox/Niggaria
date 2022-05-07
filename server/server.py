@@ -80,7 +80,6 @@ class Server:
             tcp_access = r_packet[0]
             packet = json.loads(r_packet[1])
             if packet["type"] == "init_packet":
-                print("INIT TA GRAND MERE")
                 (ath, msg, profile) = profile_handler.use_profile(packet["user"], packet["password"])
                 if ath and self.get_server_player_by_uuid(profile.uuid):
                     (ath, msg, profile) = (False, profile_handler.ALREADY_CONNECTED_CODE + " | already connected", None)
@@ -93,6 +92,7 @@ class Server:
                     new_player_entity = player.Player(profile.uuid, profile.user)
                     temp_server_player.player = new_player_entity
                     self.__connected_players.append(temp_server_player)
+                    self.logger.log(serv_player.profile.user + " join the game", subject="join")
 
                     # ---- Joining Player Only ----
                     plt_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
@@ -106,7 +106,7 @@ class Server:
                         self.send_tcp_packet(temp_server_player, str.encode(ct_packet))
 
                     # ---- Others players ----
-                    con_packet = connection_packet.ConnectionPacket(temp_server_player.player, connection_packet.JOIN_SERVER)
+                    con_packet = connection_packet.ConnectionPacket(temp_server_player.player, connection_packet.JOIN_SERVER).serialize()
                     for spl in self.__connected_players:
                         if(spl.profile.uuid != temp_server_player.profile.uuid):
                             self.send_tcp_packet(spl, str.encode(con_packet))

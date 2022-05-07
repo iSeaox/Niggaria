@@ -4,6 +4,7 @@ import pygame
 import queue
 
 from server.server import SERVER_TPS
+import server.packet.connection_packet as connection_packet
 
 import network.udp_listener as udp_listener
 import network.tcp_pipeline as tcp_pipeline
@@ -175,12 +176,12 @@ class Client:
         for r_packet in packets:
             packet = json.loads(r_packet[1])
             if(packet["type"] == "connection_packet"):
-                if packet["connection_type"] == connection_action.JOIN_SERVER:
+                if packet["connection_type"] == connection_packet.JOIN_SERVER:
                     packet_player = serializable.deserialize(packet["player"])
                     self.__world.add_player_entity(packet_player)
                     self.logger.log(packet_player.name + " joined the game", subject="join")
 
-                elif packet["connection_type"] == connection_action.QUIT_SERVER:
+                elif packet["connection_type"] == connection_packet.QUIT_SERVER:
                     packet_player = serializable.deserialize(packet["player"])
                     self.__world.remove_player_entity(packet_player)
                     self.logger.log(packet_player.name + " left the game", subject="quit")
