@@ -15,14 +15,14 @@ CHUNK_WIDTH = 32
 
 class World(serializable.Serializable):
 
-    def __init__(self, size=4):
+    def __init__(self, size=8):
         self.entities = {}
         self.size = size  # en nombre de chunk
 
         self.chunks = []
 
     def gen(self):
-        nb_point = 4
+        nb_point = 3
 
         gen_noise = noise.gen_smooth_noise(nb_point, (self.size * CHUNK_WIDTH) // (nb_point - 1), diff_max=2)
         gen_noise_bis = noise.gen_smooth_noise(nb_point * 2, (self.size * CHUNK_WIDTH) // (nb_point - 1) // 6, diff_max=2)
@@ -34,7 +34,7 @@ class World(serializable.Serializable):
         sum_noise = ([], [])
         for i in range(len(gen_noise[0])):
             sum_noise[0].append(gen_noise[0][i])
-            sum_noise[1].append(gen_noise[1][i] + gen_noise_bis[1][i % len(gen_noise_bis[0])] * 0.10)
+            sum_noise[1].append(gen_noise[1][i] + gen_noise_bis[1][i % len(gen_noise_bis[0])] * 0.15)
 
         ax3.plot(sum_noise[0], sum_noise[1], "ro")
         plt.show()
@@ -69,6 +69,7 @@ class World(serializable.Serializable):
                     blocks[b_pos].property |= b_dirt.PROPERTY_GRASS
 
                 else:
+                    blocks[b_pos].property |= b_dirt.PROPERTY_GRASS
                     blocks[b_pos].property |= b_dirt.PROPERTY_SIMPLE
 
             if b_right in blocks.keys():

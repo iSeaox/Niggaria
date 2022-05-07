@@ -1,6 +1,8 @@
 import threading
 import socket
 
+import network.net_preprocessor as net_preprocessor
+
 
 class TCPListener(threading.Thread):
     def __init__(self, logger, connection, pipeline, id, debug=False):
@@ -11,20 +13,31 @@ class TCPListener(threading.Thread):
         self.__debug = debug
 
     def run(self):
+        temp_packet = b''
+        # i = 0
         while True:
             try:
                 data = self.connection.recv(4096)
-                self.pipeline.queue.put((self.connection.getpeername(), data))
-                if self.__debug:
-                    self.logger.log(str((self.connection.getpeername(), data)), subject="debug")
+                # print(i)
+                temp_packet += data
+                # i += 1
+
+                if(len(data) != 4096 or data[len(data) - 1] == 125): # 125 est le code b'}'
+                    if self.__debug:
+                        self.logger.log(str((self.connection.getpeername(), temp_packet)), subject="debug")
+
+                    splitted_packet = net_preprocessor.preprocess_packet((self.connection.getpeername(), temp_packet))
+                    for pck in splitted_packet:
+                        self.pipeline.queue.put(pck)
+                    temp_packet = b''
+
             except ConnectionResetError:
                 break
 
             if not data:
                 break
 
-        if self.__debug:
-            self.logger.log("connection lost with " + str(self.connection.getpeername()), subject="debug")
+        self.logger.log("connection lost with " + str(self.connection.getpeername()), subject="debug")
         self.pipeline.connection_lost_function(self.connection.getpeername())
         self.pipeline.end(self)
         self.connection.close()
@@ -47,8 +60,7 @@ class TCPPipeLineServer(threading.Thread):
         self.is_listening = True
 
     def run(self):
-        if self.__debug:
-            self.logger.log("activation of the TCP pipeline: waiting for connection", subject="debug")
+        self.logger.log("activation of the TCP pipeline: waiting for connection", subject="debug")
         self.socket.listen()
 
         while self.is_listening:

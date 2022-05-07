@@ -89,7 +89,7 @@ class TextureHandler:
 
     def get_texture(self, texture_path):
         t_path = texture_path.split(":")
-        if len(t_path) == 2 and not(int(t_path[1]) == 0):
+        if len(t_path) == 2:
             if t_path[0] in self.loaded.keys() and int(t_path[1]) in self.loaded[t_path[0]].keys():
                 return self.loaded[t_path[0]][int(t_path[1])]
             else:

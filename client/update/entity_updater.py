@@ -14,12 +14,13 @@ class EntityUpdater:
         self.local_player = None
 
     def update(self, entities):
-        self.local_player.predicted_y += self.local_player.predicted_velocity[1]
-        if self.local_player.predicted_y < 25:
-            self.local_player.predicted_y = 25
-
-        self.local_player.predicted_x += self.local_player.predicted_velocity[0]
-        self.local_player.predicted_x %= 192
+        # --------- predicted velocity existe pas -----------
+        # self.local_player.predicted_y += self.local_player.predicted_velocity[1]
+        # if self.local_player.predicted_y < 25:
+        #     self.local_player.predicted_y = 25
+        #
+        # self.local_player.predicted_x += self.local_player.predicted_velocity[0]
+        # self.local_player.predicted_x %= 192
 
         for entity_uid in entities.keys():
             if entity_uid != self.local_player.instance_uid:

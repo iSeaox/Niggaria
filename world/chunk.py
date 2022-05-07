@@ -17,14 +17,14 @@ class Chunk(serializable.Serializable):
         self.background_blocks = []
 
     def gen(self, noise):
-        max_height = 40
+        max_height = 30
 
         for i in range(self.chunk_width):
             x = i + self.chunk_width * self.chunk_x
             y = round(40 + noise[1][x % len(noise[1])] * max_height)
             temp = b_dirt.PROPERTY_SIMPLE | b_dirt.PROPERTY_BOTH_SIDE
             self.blocks.append(b_dirt.Dirt(x, y, property=temp))
-            for offset in range(3):
+            for offset in range(5):
                 self.blocks.append(b_dirt.Dirt(x, y - offset, property=temp))
 
         return self

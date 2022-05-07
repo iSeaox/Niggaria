@@ -9,7 +9,7 @@ import client.gui.clickable.button as gui_button
 import client.gui.clickable.clickable as clickable
 import client.gui.clickable.text_field as text_field
 
-import network.tcp_preprocessor as tcp_preprocessor
+import network.net_preprocessor as net_preprocessor
 
 import security.player_profile as player_profile
 import security.profile_handler as profile_handler
@@ -75,10 +75,10 @@ class Launcher:
                         self.text_fields[focused_id].is_focus = False
                         self.text_fields[(focused_id + 1) % len(self.text_fields)].is_focus = True
 
-        packets = tcp_preprocessor.preprocess_packet_queue(self.client.tcp_queue)
-        for data in packets:
-            packet = json.loads(data[1].decode())
+        packets = net_preprocessor.gen_packet_list(self.client.tcp_queue)
+        for r_packet in packets:
 
+            packet = json.loads(r_packet[1])
             if packet["type"] == "profile_transfert_packet":
                 if packet["authorized"]:
                     self.client.profile = player_profile.deserialize(packet["profile"])
@@ -91,48 +91,28 @@ class Launcher:
                 self.client.set_player(serializable.deserialize(packet["player"]))
                 self.logger.log("player entity received", subject="load")
 
-        while len(self.client.buffer) > 0:
-            raw = self.client.buffer[0]
-            if raw[0][0] == 0xFF:
-                pass
-                # world = serializable.deserialize(json.loads(assemble_world))
-                #
-                # self.client.set_world(world)
-                # self.client.get_world().set_local_player(self.client.get_player())
-                # self.client.get_world_updater().local_player = self.client.get_player()
-                # self.client.get_entity_updater().local_player = self.client.get_player()
-                # self.logger.log("---------------------------------")
-                # self.client.texture_handler.load_textures(part="block")
-                # self.is_active = False
-            else:
-                packet = json.loads(raw[0].decode())
+            elif packet["type"] == "world_transfert_packet":
+                world = serializable.deserialize(packet["world"])
+                world.chunks = [0] * world.size
 
-                if packet["type"] == "world_transfert_packet":
-                    pass
-                    # world = serializable.deserialize(packet["world"])
-                    # world.chunks = [0] * world.size
-                    #
-                    # self.client.set_world(world)
-                    # self.logger.log("------------- WORLD -------------")
-                    # self.logger.log("world received", subject="load")
-                    #
-                    # self.client.get_world().set_local_player(self.client.get_player())
-                    # self.client.get_world_updater().local_player = self.client.get_player()
-                    # self.client.get_entity_updater().local_player = self.client.get_player()
-                    # self.logger.log("world player linked with local player entity", subject="load")
+                self.client.set_world(world)
+                self.logger.log("------------- WORLD -------------")
+                self.logger.log("world received", subject="load")
 
-                elif packet["type"] == "chunk_transfert_packet":
-                    pass
-                    # chunk = serializable.deserialize(packet["chunk"])
-                    # self.client.get_world().chunks[int(packet["id"])] = chunk
-                    # self.logger.log("chunk number " + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
-                    #
-                    # if(int(packet["id"]) == self.client.get_world().size - 1):
-                    #     self.is_active = False
-                    #     self.logger.log("---------------------------------")
-                    #     self.client.texture_handler.load_textures(part="block")
+                self.client.get_world().set_local_player(self.client.get_player())
+                self.client.get_world_updater().local_player = self.client.get_player()
+                self.client.get_entity_updater().local_player = self.client.get_player()
+                self.logger.log("world player linked with local player entity", subject="load")
 
-            self.client.buffer.pop()
+            elif packet["type"] == "chunk_transfert_packet":
+                chunk = serializable.deserialize(packet["chunk"])
+                self.client.get_world().chunks[int(packet["id"])] = chunk
+                self.logger.log("chunk number " + str(packet["id"] + 1) + "/" + str(self.client.get_world().size) + " received", subject="load")
+
+                if(int(packet["id"]) == self.client.get_world().size - 1):
+                    self.is_active = False
+                    self.logger.log("---------------------------------")
+                    self.client.texture_handler.load_textures(part="block")
         # -----------------------------
 
         self.valid_button.check()
@@ -148,10 +128,8 @@ class Launcher:
             if self.client.tcp_pipeline.ready_event.wait(TIMEOUT):  # on attend que le thread de liaison tcp soit prêt
 
                 packet_data = init_packet.InitPacket(self.t_field.content, self.t_field_pass.content).serialize()
-                self.client.tcp_pipeline.send_packet(str.encode(packet_data))
+                self.client.send_tcp_packet(str.encode(packet_data))
 
-                # if(not(self.client.net_listener.is_start)):
-                #     self.client.net_listener.start()
             else:
                 print("SERVER NOT FOUND")
 
