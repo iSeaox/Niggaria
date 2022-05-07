@@ -18,7 +18,6 @@ import network.tcp_preprocessor as tcp_preprocessor
 
 import entity.human.player as player
 
-import action.server.connection_action as connection_action
 import action.server.entity_move_action as entity_move_action
 import action.client.key_action as key_action
 
@@ -86,16 +85,16 @@ class Server:
         for r_packet in packets:
             tcp_access = r_packet[0]
             packet = json.loads(r_packet[1].decode())
-            if(packet["type"] == "init_packet"):
+            if packet["type"] == "init_packet":
                 (ath, msg, profile) = profile_handler.use_profile(packet["user"], packet["password"])
-                if(ath and self.get_server_player_by_uuid(profile.uuid)):
+                if ath and self.get_server_player_by_uuid(profile.uuid):
                     (ath, msg, profile) = (False, profile_handler.ALREADY_CONNECTED_CODE + " | already connected", None)
 
                 prt_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
                 temp_server_player = server_player.ServerPlayer(None, tcp_access, profile)
                 self.tcp_pipeline.send_packet(temp_server_player, str.encode(prt_packet))
 
-                if(ath):
+                if ath:
                     new_player_entity = player.Player(profile.uuid, profile.user)
                     temp_server_player.player = new_player_entity
                     self.__connected_players.append(temp_server_player)
@@ -108,12 +107,8 @@ class Server:
                     self.tcp_pipeline.send_packet(temp_server_player, str.encode(wt_packet))
 
                     for i in range(self.server_world.size):
-                        ct_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk = self.server_world.chunks[i], id = i).serialize()
+                        ct_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk=self.server_world.chunks[i], id=i).serialize()
                         # self.tcp_pipeline.send_packet(temp_server_player, str.encode(ct_packet))
-
-
-                    # ---- Other Players Only ----
-
 
         while len(self.buffer) > 0:
             packet = self.buffer[0]
@@ -166,8 +161,7 @@ class Server:
             #         for player_info in self.__connected_players_OUTDATED.values():
             #             self.__socket.sendto(str.encode(raw_packet), player_info["access"])
 
-
-            # --------------------------------- UDP Traitement -----------------------
+            # --------------------------------- UDP Treatment -----------------------
 
             if data["type"] == "action_transfert_packet":
                 concerned_player = self.__connected_players_OUTDATED[data["uuid"]]["entity"]
@@ -239,7 +233,7 @@ class Server:
 
     def connection_lost_handler(self, tcp_name):
         concerned_player = self.get_server_player_by_tcpname(tcp_name)
-        if(concerned_player != None):
+        if concerned_player is not None:
             self.__connected_players.remove(concerned_player)
 
     def get_socket(self):
@@ -250,10 +244,10 @@ class Server:
 
     def get_server_player_by_uuid(self, uuid):
         for s_player in self.__connected_players:
-            if(s_player.profile.uuid == uuid):
+            if s_player.profile.uuid == uuid:
                 return s_player
 
     def get_server_player_by_tcpname(self, tcpname):
         for s_player in self.__connected_players:
-            if(s_player.tcp_access == tcpname):
+            if s_player.tcp_access == tcpname:
                 return s_player

@@ -1,10 +1,7 @@
-import sys
 import struct
 import matplotlib.pyplot as plt
 
 import utils.serializable as serializable
-
-import entity.human.player as player
 
 import world.chunk as chunk
 import world.generator.noise as noise
@@ -15,11 +12,12 @@ import utils.file_utils as file_utils
 
 CHUNK_WIDTH = 32
 
+
 class World(serializable.Serializable):
 
-    def __init__(self, size = 4):
+    def __init__(self, size=4):
         self.entities = {}
-        self.size = size# en nombre de chunk
+        self.size = size  # en nombre de chunk
 
         self.chunks = []
 
@@ -59,45 +57,41 @@ class World(serializable.Serializable):
             b_up_right = (b_pos[0] + 1, b_pos[1] + 1)
             b_up_left = (b_pos[0] - 1, b_pos[1] + 1)
 
-            if(b_up in blocks.keys()):
-                if(b_down in blocks.keys()):
+            if b_up in blocks.keys():
+                if b_down in blocks.keys():
                     blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_CENTER
                 else:
                     blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_DOWN
 
             else:
-                if(b_down in blocks.keys()):
+                if b_down in blocks.keys():
                     blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_TOP
                     blocks[b_pos].property |= b_dirt.PROPERTY_GRASS
 
                 else:
                     blocks[b_pos].property |= b_dirt.PROPERTY_SIMPLE
 
-            if(b_right in blocks.keys()):
-                if(b_left in blocks.keys()):
+            if b_right in blocks.keys():
+                if b_left in blocks.keys():
                     blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_MID
                 else:
                     blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_LEFT
 
             else:
-                if(b_left in blocks.keys()):
+                if b_left in blocks.keys():
                     blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_RIGHT
                 else:
                     blocks[b_pos].property |= b_dirt.PROPERTY_BOTH_SIDE
 
-            if(blocks[b_pos].property & b_dirt.PROPERTY_SIDE_MID == b_dirt.PROPERTY_SIDE_MID and blocks[b_pos].property & b_dirt.PROPERTY_HEIGHT_MASK == 0):
-                if(not(b_up_right in blocks.keys())):
-                    if(not(b_up_left in blocks.keys())):
+            if blocks[b_pos].property & b_dirt.PROPERTY_SIDE_MID == b_dirt.PROPERTY_SIDE_MID and blocks[b_pos].property & b_dirt.PROPERTY_HEIGHT_MASK == 0:
+                if not(b_up_right in blocks.keys()):
+                    if not(b_up_left in blocks.keys()):
                         blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_BOTH
                     else:
                         blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_RIGHT
                 else:
-                    if(not(b_up_left in blocks.keys())):
+                    if not(b_up_left in blocks.keys()):
                         blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_LEFT
-
-
-
-
 
         print("map width: ", (self.size * CHUNK_WIDTH))
 
@@ -108,9 +102,8 @@ class World(serializable.Serializable):
         self.entities[player.instance_uid] = player
 
     def remove_player_entity(self, player):
-        if(player.instance_uid in self.entities.keys()):
+        if player.instance_uid in self.entities.keys():
             self.entities.pop(player.instance_uid)
-
 
     def set_local_player(self, player_entity):
         self.entities[player_entity.instance_uid] = player_entity
@@ -127,13 +120,13 @@ class World(serializable.Serializable):
     def to_files(self, path):
         files_data = {}
         for i in range(len(self.chunks)):
-            working_file = file_utils.create_file(path + "\chunk\chunk_"+str(i)+".chu")
+            working_file = file_utils.create_file(path + r"\chunk\chunk_"+str(i)+".chu")
 
             with working_file.open("wb+") as file:
                 file.seek(0)
                 file.write(self.chunks[i].to_file())
 
-        working_file = file_utils.create_file(path + "\world_desc.dat")
+        working_file = file_utils.create_file(path + r"\world_desc.dat")
         with working_file.open("wb+") as file:
             file.seek(0)
             content = b'world_desc'
@@ -143,7 +136,7 @@ class World(serializable.Serializable):
             content += struct.pack("H", self.size)
             file.write(content)
 
-        working_file = file_utils.create_file(path + "\entities.dat")
+        working_file = file_utils.create_file(path + r"\entities.dat")
         with working_file.open("wb+") as file:
             file.seek(0)
             header = b'entities_file'

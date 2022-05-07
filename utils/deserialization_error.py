@@ -1,3 +1,2 @@
-
 class DeserializationError(Exception):
     pass

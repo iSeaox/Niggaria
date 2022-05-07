@@ -19,17 +19,16 @@ PROPERTY_CORNER_ADJUST_LEFT = 0x100_0000
 PROPERTY_CORNER_ADJUST_RIGHT = 0x200_0000
 PROPERTY_CORNER_ADJUST_BOTH = 0x300_0000
 
+
 class Dirt(block.Block):
+    # Property:
 
-# Property:
-
-#     | Simple (1 bit) | Side (2 bit) | Height (2 bit) |  Grass (1 bit) | Corner_adjust (2 bit) |
-#
-#   Side -> 1 = left, 2 = right, 3 = mid
-#   Height -> 1 = top, 2 = down, 0 = center
-#   Corner_adjust -> 1 = left, 2 = right, 3 = both
-
-    def __init__(self, x = None, y = None, property = 0):
+    #     | Simple (1 bit) | Side (2 bit) | Height (2 bit) |  Grass (1 bit) | Corner_adjust (2 bit) |
+    #
+    #   Side -> 1 = left, 2 = right, 3 = mid
+    #   Height -> 1 = top, 2 = down, 0 = center
+    #   Corner_adjust -> 1 = left, 2 = right, 3 = both
+    def __init__(self, x=None, y=None, property=0):
         super().__init__(x, y, "dirt", property)
         # print("-------")
         # print(PROPERTY_SIMPLE | PROPERTY_SIDE_MID | PROPERTY_GRASS)

@@ -2,11 +2,10 @@ import struct
 
 import utils.serializable as serializable
 import utils.uid_generator as uid_generator
-from pygame import Vector2
-
 
 ABSTRACT_ENTITY = 0
 PLAYER_ENTITY = 1
+
 
 class Entity(serializable.Serializable):
     def __init__(self):
@@ -25,10 +24,6 @@ class Entity(serializable.Serializable):
         self.predicted_y = 0
 
         self.velocity = [0, 0]
-
-    def add_velocity(vector):
-        self.velocity[0] += vector[0]
-        self.velocity[1] += vector[1]
 
     def to_bytes(self):
         # | id (2 bytes) | uid (8 bytes) | x (8 bytes) | y (8 bytes) |

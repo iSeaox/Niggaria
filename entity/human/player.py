@@ -1,9 +1,8 @@
 import entity.entity as entity
-import security.player_profile as player_profile
-from pygame import Vector2
 
 
 NAME_SIZE = 25
+
 
 class Player(entity.Entity):
     def __init__(self, uuid=None, name=None):
@@ -12,7 +11,7 @@ class Player(entity.Entity):
         self.type = "player"
         self.id = entity.PLAYER_ENTITY
         self.uuid = uuid
-        self.name = name # max 25 caractère
+        self.name = name  # max 25 caractère
 
         self.x = 20
         self.y = 30
