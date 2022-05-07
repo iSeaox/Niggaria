@@ -4,11 +4,13 @@ import queue
 
 import server.packet.profile_transfert_packet as profile_transfert_packet
 import server.packet.player_transfert_packet as player_transfert_packet
-import server.packet.action_transfert_packet as action_transfert_packet
 import server.packet.world_transfert_packet as world_transfert_packet
 import server.packet.chunk_transfert_packet as chunk_transfert_packet
 import server.packet.connection_packet as connection_packet
+import server.packet.action_transfert_packet as action_transfert_packet
 import server.container.entity.human.server_player as server_player
+
+import action.server.entity_move_action as entity_move_action
 
 import security.profile_handler as profile_handler
 
@@ -17,9 +19,6 @@ import network.tcp_pipeline as tcp_pipeline
 import network.net_preprocessor as net_preprocessor
 
 import entity.human.player as player
-
-import action.server.entity_move_action as entity_move_action
-import action.client.key_action as key_action
 
 import utils.clock as clock
 
@@ -54,8 +53,6 @@ class Server:
         self.tcp_pipeline.start()
 
         self.__connected_players = []
-        self.__connected_players_data = {}
-        self.__connected_players_OUTDATED = {}
 
         self.server_world = world.World()
         self.server_world.gen()
@@ -124,70 +121,23 @@ class Server:
                 self.get_server_player_by_uuid(data["uuid"]).udp_access = packet[1]
 
             if data["type"] == "action_transfert_packet":
-                concerned_player = self.__connected_players_OUTDATED[data["uuid"]]["entity"]
-                if data["action"]["type"] == "key_action":
-                    pressed_key = data["action"]["key"]
-                    if pressed_key == key_action.KEY_RIGHT:
-                        if data['action']['action'] == key_action.ACTION_DOWN:
-                            self.__connected_players_data[data['uuid']]['right'] = [True, data['timestamp']]
-                        else:
-                            time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['right'][1]
-                            concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
+                for concerned_player in self.__connected_players:
+                    if concerned_player.profile.uuid == data['uuid']:
+                        em_packets = concerned_player.update_player_action(data)
+                        for em_packet in em_packets:
+                            self.send_udp_packet(concerned_player, str.encode(em_packet))
 
-                            if self.__connected_players_data[data['uuid']]['left'][0]:
-                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['left'][1]
-                                concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
-                                self.__connected_players_data[data['uuid']]['left'][1] = data['timestamp']
+        # -------------------------- Update players and send player position to all players -----------------------
+        for concerned_player in self.__connected_players:
+            concerned_player.update_player(self.__clock, self.__tps, self.server_world.size * world.CHUNK_WIDTH)
 
-                            concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
-
-                            em_action = entity_move_action.EntityMoveAction(concerned_player)
-                            em_action.timestamp = data["timestamp"]
-                            raw_packet = action_transfert_packet.ActionTransfertPacket(em_action, True).serialize()
-                            self.__udp_socket.sendto(str.encode(raw_packet), packet[1])
-
-                            self.__connected_players_data[data['uuid']]['right'][0] = False
-
-                    elif pressed_key == key_action.KEY_LEFT:
-                        if data['action']['action'] == key_action.ACTION_DOWN:
-                            self.__connected_players_data[data['uuid']]['left'] = [True, data['timestamp']]
-                        else:
-                            if self.__connected_players_data[data['uuid']]['right'][0]:
-                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['right'][1]
-                                concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
-                                self.__connected_players_data[data['uuid']]['right'][1] = data['timestamp']
-
-                            time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['left'][1]
-                            concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
-
-                            concerned_player.x %= self.server_world.size * world.CHUNK_WIDTH
-
-                            em_action = entity_move_action.EntityMoveAction(concerned_player)
-                            em_action.timestamp = data["timestamp"]
-                            raw_packet = action_transfert_packet.ActionTransfertPacket(em_action, True).serialize()
-                            self.__udp_socket.sendto(str.encode(raw_packet), packet[1])
-
-                            self.__connected_players_data[data['uuid']]['left'][0] = False
-
-        for player_uuid in self.__connected_players_OUTDATED.keys():
-            concerned_player = self.__connected_players_OUTDATED[player_uuid]['entity']
-
-            if self.__connected_players_data[player_uuid]['right'][0]:
-                time_elapsed = self.__clock.get_time() - self.__connected_players_data[player_uuid]['right'][1]
-                concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
-                self.__connected_players_data[player_uuid]['right'][1] = self.__clock.get_time()
-
-            if self.__connected_players_data[player_uuid]['left'][0]:
-                time_elapsed = self.__clock.get_time() - self.__connected_players_data[player_uuid]['left'][1]
-                concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
-                self.__connected_players_data[player_uuid]['left'][1] = self.__clock.get_time()
-
-            for other_player_uuid in self.__connected_players_OUTDATED.keys():
-                if player_uuid != other_player_uuid:
-                    em_action = entity_move_action.EntityMoveAction(self.__connected_players_OUTDATED[other_player_uuid]['entity'])
+            for other_player in self.__connected_players:
+                if concerned_player.profile.uuid != other_player.profile.uuid:
+                    em_action = entity_move_action.EntityMoveAction(other_player)
                     em_action.timestamp = self.__clock.get_time()
                     raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
-                    self.__udp_socket.sendto(str.encode(raw_packet), self.__connected_players_OUTDATED[player_uuid]['access'])
+
+                    self.send_udp_packet(concerned_player, str.encode(raw_packet))
 
     def send_udp_packet(self, server_player, packet):
         self.__udp_socket.sendto(packet, server_player.udp_access)

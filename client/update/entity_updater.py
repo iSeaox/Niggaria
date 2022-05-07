@@ -2,30 +2,37 @@ import time
 
 import action.client.key_action as key_action
 
+from pygame import Vector2
+
+import utils.clock as clock
+
 from server.server import SERVER_TPS
+
+from world.world import CHUNK_WIDTH
 
 TPS_TIME = (1 / SERVER_TPS) * 1_000_000_000
 
 
 class EntityUpdater:
-    def __init__(self):
+    def __init__(self, client_fps):
         self.buffers = {}
-        self.local_buffer = []
+        self.clock = clock.Clock()
+        self.__fps = client_fps
+
         self.local_player = None
 
-    def update(self, entities):
-        # --------- predicted velocity existe pas -----------
-        # self.local_player.predicted_y += self.local_player.predicted_velocity[1]
-        # if self.local_player.predicted_y < 25:
-        #     self.local_player.predicted_y = 25
-        #
-        # self.local_player.predicted_x += self.local_player.predicted_velocity[0]
-        # self.local_player.predicted_x %= 192
+    def update(self, world):
+        self.local_player.velocity += self.local_player.acceleration
+        self.local_player.acceleration = Vector2(0, 0)
+        self.local_player.position += self.local_player.velocity * self.clock.time_step() / (1_000_000_000 / SERVER_TPS)
+        # La division par 4 est arbitraire, son but est de rendre une acceleration de 1 un vitesse apparente raisonnable.
 
-        for entity_uid in entities.keys():
+        self.local_player.position.x %= world.size * CHUNK_WIDTH
+
+        for entity_uid in world.entities.keys():
             if entity_uid != self.local_player.instance_uid:
 
-                concerned_entity = entities[entity_uid]
+                concerned_entity = world.entities[entity_uid]
 
                 if entity_uid in self.buffers.keys():
                     interpolate_timestamp = time.time_ns() - TPS_TIME
@@ -65,21 +72,23 @@ class EntityUpdater:
 
     def push_local_action(self, action):
         if action.type == "entity_move_action":
-            print(f'SELF : {action.entity.x} {action.entity.y}')
-            self.local_player.x, self.local_player.y = self.local_player.predicted_x, self.local_player.predicted_y = action.entity.x, action.entity.y
-            self.local_player.velocity = action.entity.velocity
+            print(f'SELF : {action.entity.position.x} {action.entity.position.y}')
+            self.local_player.position = action.entity.position
         else:
             if action.type == "key_action":
                 if action.action == key_action.ACTION_DOWN:
                     if action.key == key_action.KEY_RIGHT:
-                        self.local_player.predicted_velocity[0] += 0.2
-                    else:
-                        self.local_player.predicted_velocity[0] += -0.2
-                else:
+                        self.local_player.acceleration += Vector2(1, 0)
+                    elif action.key == key_action.KEY_LEFT:
+                        self.local_player.acceleration += Vector2(-1, 0)
+                    elif action.key == key_action.KEY_JUMP:
+                        pass
+                        # self.local_player.acceleration += Vector2(0, 0.5)
+                elif action.action == key_action.ACTION_UP:
                     if action.key == key_action.KEY_RIGHT:
-                        self.local_player.predicted_velocity[0] += -0.2
-                    else:
-                        self.local_player.predicted_velocity[0] += 0.2
+                        self.local_player.acceleration += Vector2(-1, 0)
+                    elif action.key == key_action.KEY_LEFT:
+                        self.local_player.acceleration += Vector2(1, 0)
 
     def push_action(self, entity, action):
         if not(entity.instance_uid in self.buffers.keys()):
