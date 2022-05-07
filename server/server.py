@@ -25,7 +25,6 @@ import utils.clock as clock
 
 import world.world as world
 
-
 SERVER_TPS = 20
 
 
@@ -50,7 +49,8 @@ class Server:
         self.udp_listener = udp_listener.UDPListener(self.logger, self.__udp_socket, self.udp_queue)
         self.udp_listener.start()
 
-        self.tcp_pipeline = tcp_pipeline.TCPPipeLineServer(self.logger, self.tcp_queue, self.connection_lost_handler, debug=True)
+        self.tcp_pipeline = tcp_pipeline.TCPPipeLineServer(self.logger, self.tcp_queue, self.connection_lost_handler,
+                                                           debug=True)
         self.tcp_pipeline.start()
 
         self.__connected_players = []
@@ -102,26 +102,27 @@ class Server:
                     self.send_tcp_packet(temp_server_player, str.encode(wt_packet))
 
                     for i in range(self.server_world.size):
-                        ct_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk=self.server_world.chunks[i], id=i).serialize()
+                        ct_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk=self.server_world.chunks[i],
+                                                                                id=i).serialize()
                         self.send_tcp_packet(temp_server_player, str.encode(ct_packet))
 
                     # ---- Others players ----
-                    con_packet = connection_packet.ConnectionPacket(temp_server_player.player, connection_packet.JOIN_SERVER).serialize()
+                    con_packet = connection_packet.ConnectionPacket(temp_server_player.player,
+                                                                    connection_packet.JOIN_SERVER).serialize()
                     for spl in self.__connected_players:
-                        if(spl.profile.uuid != temp_server_player.profile.uuid):
+                        if (spl.profile.uuid != temp_server_player.profile.uuid):
                             self.send_tcp_packet(spl, str.encode(con_packet))
 
             elif packet["type"] == "quit_packet":
                 concerned_server_player = self.get_server_player_by_uuid(packet["profile"]["uuid"])
                 self.quit_player(concerned_server_player)
 
-
         # -------------------------- UDP Treatment -----------------------
         packets = net_preprocessor.gen_packet_list(self.udp_queue)
         for packet in packets:
             data = json.loads(packet[0].decode())
 
-            if(data["type"] == "sudpc_packet"):
+            if (data["type"] == "sudpc_packet"):
                 self.get_server_player_by_uuid(data["uuid"]).udp_access = packet[1]
 
             if data["type"] == "action_transfert_packet":
@@ -136,7 +137,8 @@ class Server:
                             concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
 
                             if self.__connected_players_data[data['uuid']]['left'][0]:
-                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['left'][1]
+                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['left'][
+                                    1]
                                 concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
                                 self.__connected_players_data[data['uuid']]['left'][1] = data['timestamp']
 
@@ -154,7 +156,8 @@ class Server:
                             self.__connected_players_data[data['uuid']]['left'] = [True, data['timestamp']]
                         else:
                             if self.__connected_players_data[data['uuid']]['right'][0]:
-                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['right'][1]
+                                time_elapsed = data['timestamp'] - self.__connected_players_data[data['uuid']]['right'][
+                                    1]
                                 concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
                                 self.__connected_players_data[data['uuid']]['right'][1] = data['timestamp']
 
@@ -185,10 +188,12 @@ class Server:
 
             for other_player_uuid in self.__connected_players_OUTDATED.keys():
                 if player_uuid != other_player_uuid:
-                    em_action = entity_move_action.EntityMoveAction(self.__connected_players_OUTDATED[other_player_uuid]['entity'])
+                    em_action = entity_move_action.EntityMoveAction(
+                        self.__connected_players_OUTDATED[other_player_uuid]['entity'])
                     em_action.timestamp = self.__clock.get_time()
                     raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
-                    self.__udp_socket.sendto(str.encode(raw_packet), self.__connected_players_OUTDATED[player_uuid]['access'])
+                    self.__udp_socket.sendto(str.encode(raw_packet),
+                                             self.__connected_players_OUTDATED[player_uuid]['access'])
 
     def send_udp_packet(self, server_player, packet):
         self.__udp_socket.sendto(packet, server_player.udp_access)
