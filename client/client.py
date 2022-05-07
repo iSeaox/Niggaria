@@ -1,5 +1,4 @@
 import socket
-import time
 import json
 import pygame
 import queue
@@ -10,6 +9,7 @@ import network.net_listener as net_listener
 import network.tcp_pipeline as tcp_pipeline
 
 import utils.serializable as serializable
+import utils.clock as clock
 
 import client.packet.action_transfert_packet as action_transfert_packet
 import client.packet.quit_packet as quit_packet
@@ -23,7 +23,6 @@ import client.update.world_updater as world_updater
 
 import client.launcher.launcher as launcher
 
-
 import action.client.key_action as key_action
 import action.server.connection_action as connection_action
 
@@ -31,13 +30,6 @@ import world.world as world
 
 
 CLIENT_FPS = 60
-
-
-def sleep(duration, get_now=time.perf_counter):
-    now = get_now()
-    end = now + duration
-    while now < end:
-        now = get_now()
 
 
 class Client:
@@ -50,6 +42,7 @@ class Client:
         self.__tps = SERVER_TPS
         self.__player = None
         self.__world = None
+        self.__clock = clock.Clock(self.__fps)
 
         self.__entity_updater = entity_updater.EntityUpdater()
         self.__world_updater = world_updater.WorldUpdater(self.__entity_updater)
@@ -91,34 +84,20 @@ class Client:
         self.texture_handler.load_textures(part="gui")
         self.__launcher.start(screen)
         self.view = view_handler.View((0, 17), self.__player, screen.get_size(), 2, self.__world.size)
-        fpt = self.__fps / self.__tps
-        tick_counter = 0
-        tick = 0
 
         while self.__run:
-            begin = time.time_ns() / 1_000_000_000
+            self.__clock.start_tick()
 
-            if not(tick_counter % fpt):
-                tick_counter = 0
-                tick += 1
-                tick %= self.__tps
-                self.tick()
-
-            tick_counter += 1
-
-            self.update(tick, fpt)
+            self.update()
             self.render(screen)
             pygame.display.flip()
 
-            elapsed = (time.time_ns() / 1_000_000_000) - begin
-            waiting_time = (1 / self.__fps) - elapsed
-            if waiting_time > 0:
-                sleep(waiting_time)
+            self.__clock.tick()
 
         raw_packet = quit_packet.QuitPacket(self.profile).serialize()
         self.__socket.sendto(str.encode(raw_packet), self.server_access)
 
-    def update(self, tick, fpt):
+    def update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.__run = False
@@ -215,20 +194,13 @@ class Client:
             self.buffer = self.buffer[1:]
         # -------------------------------------
 
-        self.__world_updater.update(self.__world, tick, fpt)
+        self.__world_updater.update(self.__world)
 
         if not self.debug_map_gen:
             self.view.check()
         else:
             cur_pos = self.view.pos
             self.view.pos = (cur_pos[0] % (self.view.world_size * world.CHUNK_WIDTH), cur_pos[1])
-
-    def tick(self):
-        gravity_intensity = 0.13
-        player = self.__player
-
-        if player.predicted_y >= 25:
-            player.velocity[1] -= gravity_intensity
 
     def render(self, screen):
         screen.fill((0, 0, 0))

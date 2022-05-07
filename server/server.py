@@ -1,5 +1,4 @@
 import socket
-import time
 import json
 import queue
 
@@ -21,17 +20,12 @@ import entity.human.player as player
 import action.server.entity_move_action as entity_move_action
 import action.client.key_action as key_action
 
+import utils.clock as clock
+
 import world.world as world
 
 
 SERVER_TPS = 20
-
-
-def sleep(duration, get_now=time.perf_counter):
-    now = get_now()
-    end = now + duration
-    while now < end:
-        now = get_now()
 
 
 class Server:
@@ -40,6 +34,7 @@ class Server:
         self.__tps = SERVER_TPS
         self.__ip_addr = ip_addr
         self.__port = port
+        self.__clock = clock.Clock(SERVER_TPS)
 
         self.logger = logger
 
@@ -68,14 +63,11 @@ class Server:
     def start(self):
         self.__run = True
         while self.__run:
-            begin = time.time_ns() / 1_000_000_000
+            self.__clock.start_tick()
 
             self.tick()
 
-            elapsed = (time.time_ns() / 1_000_000_000) - begin
-            waiting_time = (1 / self.__tps) - elapsed
-            if waiting_time > 0:
-                sleep(waiting_time)
+            self.__clock.tick()
 
     def tick(self):
         if len(self.buffer) > 0:
@@ -215,19 +207,19 @@ class Server:
             concerned_player = self.__connected_players_OUTDATED[player_uuid]['entity']
 
             if self.__connected_players_data[player_uuid]['right'][0]:
-                time_elapsed = time.time_ns() - self.__connected_players_data[player_uuid]['right'][1]
+                time_elapsed = self.__clock.get_time() - self.__connected_players_data[player_uuid]['right'][1]
                 concerned_player.x += time_elapsed * (1.2 * 10 ** -8)
-                self.__connected_players_data[player_uuid]['right'][1] = time.time_ns()
+                self.__connected_players_data[player_uuid]['right'][1] = self.__clock.get_time()
 
             if self.__connected_players_data[player_uuid]['left'][0]:
-                time_elapsed = time.time_ns() - self.__connected_players_data[player_uuid]['left'][1]
+                time_elapsed = self.__clock.get_time() - self.__connected_players_data[player_uuid]['left'][1]
                 concerned_player.x -= time_elapsed * (1.2 * 10 ** -8)
-                self.__connected_players_data[player_uuid]['left'][1] = time.time_ns()
+                self.__connected_players_data[player_uuid]['left'][1] = self.__clock.get_time()
 
             for other_player_uuid in self.__connected_players_OUTDATED.keys():
                 if player_uuid != other_player_uuid:
                     em_action = entity_move_action.EntityMoveAction(self.__connected_players_OUTDATED[other_player_uuid]['entity'])
-                    em_action.timestamp = time.time_ns()
+                    em_action.timestamp = self.__clock.get_time()
                     raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
                     self.__socket.sendto(str.encode(raw_packet), self.__connected_players_OUTDATED[player_uuid]['access'])
 

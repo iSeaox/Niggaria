@@ -5,5 +5,5 @@ class WorldUpdater:
 
         self.buffers = {}
 
-    def update(self, world, tick, fpt):
-        self.entity_updater.update(world.entities, tick, fpt)
+    def update(self, world):
+        self.entity_updater.update(world.entities)
