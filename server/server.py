@@ -133,7 +133,7 @@ class Server:
 
             for other_player in self.__connected_players:
                 if concerned_player.profile.uuid != other_player.profile.uuid:
-                    em_action = entity_move_action.EntityMoveAction(other_player)
+                    em_action = entity_move_action.EntityMoveAction(other_player.player)
                     em_action.timestamp = self.__clock.get_time()
                     raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
 
