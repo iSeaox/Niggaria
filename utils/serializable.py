@@ -1,5 +1,7 @@
 import sys
 
+from pygame import Vector2
+
 import utils.deserialization_error as des_error
 
 AUTHORIZED_TYPE = (int, str, bool, float)
@@ -24,6 +26,8 @@ class Serializable:
                     json_dict[key] = {}
                     for subdict_key in self.__dict__[key].keys():
                         json_dict[key][subdict_key] = self.__dict__[key][subdict_key].serialize()
+                elif type(self.__dict__[key]) == Vector2:
+                    json_dict[key] = {"x": self.__dict__[key].x, "y": self.__dict__[key].y, "extended_type": self.__dict__[key].__module__ + "." + self.__dict__[key].__class__.__name__}
                 else:
                     json_dict[key] = self.__dict__[key].serialize()
 
