@@ -92,7 +92,7 @@ class Server:
                     new_player_entity = player.Player(profile.uuid, profile.user)
                     temp_server_player.player = new_player_entity
                     self.__connected_players.append(temp_server_player)
-                    self.logger.log(serv_player.profile.user + " join the game", subject="join")
+                    self.logger.log(temp_server_player.profile.user + " join the game", subject="join")
 
                     # ---- Joining Player Only ----
                     plt_packet = player_transfert_packet.PlayerTransfertPacket(new_player_entity).serialize()
