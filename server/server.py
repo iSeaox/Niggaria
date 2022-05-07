@@ -108,20 +108,19 @@ class Server:
                     # ---- Others players ----
                     con_packet = connection_packet.ConnectionPacket(temp_server_player.player, connection_packet.JOIN_SERVER).serialize()
                     for spl in self.__connected_players:
-                        if(spl.profile.uuid != temp_server_player.profile.uuid):
+                        if spl.profile.uuid != temp_server_player.profile.uuid:
                             self.send_tcp_packet(spl, str.encode(con_packet))
 
             elif packet["type"] == "quit_packet":
                 concerned_server_player = self.get_server_player_by_uuid(packet["profile"]["uuid"])
                 self.quit_player(concerned_server_player)
 
-
         # -------------------------- UDP Treatment -----------------------
         packets = net_preprocessor.gen_packet_list(self.udp_queue)
         for packet in packets:
             data = json.loads(packet[0].decode())
 
-            if(data["type"] == "sudpc_packet"):
+            if data["type"] == "sudpc_packet":
                 self.get_server_player_by_uuid(data["uuid"]).udp_access = packet[1]
 
             if data["type"] == "action_transfert_packet":
