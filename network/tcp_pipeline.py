@@ -22,7 +22,7 @@ class TCPListener(threading.Thread):
                 temp_packet += data
                 # i += 1
 
-                if(len(data) != 4096 or data[len(data) - 1] == 125): # 125 est le code b'}'
+                if len(data) != 4096 or data[len(data) - 1] == 125:  # 125 est le code b'}'
                     if self.__debug:
                         self.logger.log(str((self.connection.getpeername(), temp_packet)), subject="debug")
 

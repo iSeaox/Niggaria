@@ -175,7 +175,7 @@ class Client:
         packets = net_preprocessor.gen_packet_list(self.tcp_queue)
         for r_packet in packets:
             packet = json.loads(r_packet[1])
-            if(packet["type"] == "connection_packet"):
+            if packet["type"] == "connection_packet":
                 if packet["connection_type"] == connection_packet.JOIN_SERVER:
                     packet_player = serializable.deserialize(packet["player"])
                     self.__world.add_player_entity(packet_player)

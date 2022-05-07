@@ -1,6 +1,7 @@
 import network.packet.packet as packet
 
-#Start UDP Communication Packet
+
+# Start UDP Communication Packet
 class SUDPCPacket(packet.Packet):
     def __init__(self, uuid):
         super().__init__()

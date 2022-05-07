@@ -7,23 +7,24 @@ def gen_packet_list(queue):
 
     return packets
 
+
 def preprocess_packet(packet):
     packets = []
 
     data = packet[1].decode()
     out = []
-    openned = 0
+    opened = 0
     f_id = 0
 
     for i in range(len(data)):
-        if(data[i] == "{"):
-            openned +=1
-            if(openned == 1):
+        if data[i] == "{":
+            opened += 1
+            if opened == 1:
                 f_id = i
 
-        elif(data[i] == "}"):
-            openned -= 1
-            if(openned == 0):
+        elif data[i] == "}":
+            opened -= 1
+            if opened == 0:
                 out.append(data[f_id:i+1])
 
     for pck in out:
