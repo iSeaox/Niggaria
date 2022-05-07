@@ -75,11 +75,6 @@ class Launcher:
                         self.text_fields[focused_id].is_focus = False
                         self.text_fields[(focused_id + 1) % len(self.text_fields)].is_focus = True
 
-        # ----- PACKET HANDLING -------
-
-        # if(len(self.client.buffer) > 0):
-        #     print(self.client.buffer)
-
         packets = tcp_preprocessor.preprocess_packet_queue(self.client.tcp_queue)
         for data in packets:
             packet = json.loads(data[1].decode())
@@ -137,7 +132,7 @@ class Launcher:
                     #     self.logger.log("---------------------------------")
                     #     self.client.texture_handler.load_textures(part="block")
 
-            self.client.buffer = self.client.buffer[1:]
+            self.client.buffer.pop()
         # -----------------------------
 
         self.valid_button.check()
