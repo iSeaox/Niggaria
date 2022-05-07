@@ -36,7 +36,7 @@ class TCPPipeLineServer(threading.Thread):
         self.logger = logger
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind(('localhost', port))
+        self.socket.bind(('', port))
         self.__debug = debug
         self.connection_lost_function = connection_lost_function
         self.thread_id = 0
