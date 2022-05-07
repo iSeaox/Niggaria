@@ -1,7 +1,6 @@
 import pygame
 import time
 import json
-import queue
 
 import utils.serializable as serializable
 
@@ -40,7 +39,6 @@ class Launcher:
         self.server_response = None
 
         self.partial_packets = {}
-        self.tcp_queue = queue.Queue(maxsize=0)
 
     def start(self, screen):
         self.__screen = screen
@@ -82,7 +80,7 @@ class Launcher:
         # if(len(self.client.buffer) > 0):
         #     print(self.client.buffer)
 
-        packets = tcp_preprocessor.preprocess_packet_queue(self.tcp_queue)
+        packets = tcp_preprocessor.preprocess_packet_queue(self.client.tcp_queue)
         for data in packets:
             packet = json.loads(data[1].decode())
 
