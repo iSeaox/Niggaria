@@ -1,0 +1,9 @@
+{
+  "type": "strip/textures",
+  "file": "textures/block/decoration/plant.png",
+  "name": "block.decoration.plant",
+  "format": {
+    "height": 16,
+    "width": 16
+  }
+}

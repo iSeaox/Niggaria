@@ -7,3 +7,6 @@ class Stone(block.Block):
         super().__init__(x, y, "stone", 0)
 
         self.id = block.STONE_BLOCK
+
+    def is_solid(self):
+        return True

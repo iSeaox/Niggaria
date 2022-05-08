@@ -1,8 +1,10 @@
 import struct
+import random
 
 import utils.serializable as serializable
 
 import block.solid.dirt as b_dirt
+import block.decoration.plant as b_plant
 
 
 class Chunk(serializable.Serializable):
@@ -17,14 +19,18 @@ class Chunk(serializable.Serializable):
         self.background_blocks = []
 
     def gen(self, noise):
-        max_height = 30
+        max_height = 40
+        plant_ceil = 0.3
 
         for i in range(self.chunk_width):
             x = i + self.chunk_width * self.chunk_x
             y = round(40 + noise[1][x % len(noise[1])] * max_height)
             temp = b_dirt.PROPERTY_SIMPLE | b_dirt.PROPERTY_BOTH_SIDE
-            self.blocks.append(b_dirt.Dirt(x, y, property=temp))
-            for offset in range(5):
+
+            plant_value = abs(noise[1][(x * 10) % len(noise[1])])
+            if plant_value < plant_ceil:
+                self.blocks.append(b_plant.Plant(x, y + 1, variant=random.randint(0, 5)))
+            for offset in range(30):
                 self.blocks.append(b_dirt.Dirt(x, y - offset, property=temp))
 
         return self
