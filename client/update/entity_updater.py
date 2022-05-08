@@ -45,13 +45,13 @@ class EntityUpdater:
 
                     i = 0
                     while i < len(working_buffer) and working_buffer[i][0] <= interpolate_timestamp:
-                        previous_pos = (working_buffer[i][1].entity.x, working_buffer[i][1].entity.y)
+                        previous_pos = (working_buffer[i][1].entity.position.x, working_buffer[i][1].entity.position.y)
                         previous_timestamp = working_buffer[i][0]
                         i += 1
 
                     i = len(working_buffer) - 1
                     while i >= 0 and working_buffer[i][0] >= interpolate_timestamp:
-                        next_pos = (working_buffer[i][1].entity.x, working_buffer[i][1].entity.y)
+                        next_pos = (working_buffer[i][1].entity.position.x, working_buffer[i][1].entity.position.y)
                         next_timestamp = working_buffer[i][0]
                         i -= 1
                     if previous_pos != () and next_pos != ():
@@ -60,15 +60,12 @@ class EntityUpdater:
 
                         delta_x = (interpolate_timestamp - previous_timestamp) * dist_x / delta_t
                         if delta_x < delta_x_max:
-                            concerned_entity.x = previous_pos[0] + delta_x
+                            concerned_entity.position.x = previous_pos[0] + delta_x
                     elif previous_pos != () and next_pos == ():
-                        concerned_entity.x = previous_pos[0]
+                        concerned_entity.position.x = previous_pos[0]
 
                     while len(self.buffers[entity_uid]) > 0 and time.time_ns() - self.buffers[entity_uid][0][0] > TPS_TIME * 2:
                         self.buffers[entity_uid] = self.buffers[entity_uid][1:]
-
-                concerned_entity.predicted_x = concerned_entity.x
-                concerned_entity.predicted_y = concerned_entity.y
 
     def push_local_action(self, action):
         if action.type == "entity_move_action":
@@ -93,5 +90,5 @@ class EntityUpdater:
     def push_action(self, entity, action):
         if not(entity.instance_uid in self.buffers.keys()):
             self.buffers[entity.instance_uid] = []
-        self.buffers[entity.instance_uid].append((time.time_ns(), action))
-        print(f'OTHER : {action.entity.x} {action.entity.y}')
+        self.buffers[entity.instance_uid].append((self.clock.get_time(), action))
+        print(f'OTHER : {action.entity.position.x} SELF : {self.local_player.position.x}')

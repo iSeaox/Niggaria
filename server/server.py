@@ -82,13 +82,14 @@ class Server:
                     (ath, msg, profile) = (False, profile_handler.ALREADY_CONNECTED_CODE + " | already connected", None)
 
                 prt_packet = profile_transfert_packet.ProfileTransfertPacket(profile, msg, ath).serialize()
-                temp_server_player = server_player.ServerPlayer(None, tcp_access, profile)
+                temp_server_player = server_player.ServerPlayer(None, tcp_access, profile, self.__tps)
                 self.send_tcp_packet(temp_server_player, str.encode(prt_packet))
 
                 if ath:
                     new_player_entity = player.Player(profile.uuid, profile.user)
                     temp_server_player.player = new_player_entity
                     self.__connected_players.append(temp_server_player)
+                    self.server_world.add_player_entity(temp_server_player.player)
                     self.logger.log(temp_server_player.profile.user + " join the game", subject="join")
 
                     # ---- Joining Player Only ----
@@ -129,7 +130,7 @@ class Server:
 
         # -------------------------- Update players and send player position to all players -----------------------
         for concerned_player in self.__connected_players:
-            concerned_player.update_player(self.__clock, self.__tps, self.server_world.size * world.CHUNK_WIDTH)
+            concerned_player.update_player(self.server_world.size * world.CHUNK_WIDTH)
 
             for other_player in self.__connected_players:
                 if concerned_player.profile.uuid != other_player.profile.uuid:
@@ -140,7 +141,8 @@ class Server:
                     self.send_udp_packet(concerned_player, str.encode(raw_packet))
 
     def send_udp_packet(self, server_player, packet):
-        self.__udp_socket.sendto(packet, server_player.udp_access)
+        if server_player.udp_access:
+            self.__udp_socket.sendto(packet, server_player.udp_access)
 
     def send_tcp_packet(self, server_player, packet):
         self.tcp_pipeline.send_packet(server_player, packet)
