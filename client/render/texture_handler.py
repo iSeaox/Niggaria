@@ -87,13 +87,13 @@ class TextureHandler:
         self.loaded[info["name"]] = new_entries
         self.logger.log(info["name"] + " loaded", subject="load")
 
-    def get_texture(self, texture_path, variant=None, charset=None):
+    def get_texture(self, texture_path, variant=None, charset_key=None):
         t_path = texture_path.split(":")
         if t_path[0] in self.loaded.keys():
             texture = self.loaded[t_path[0]]
             if type(texture) == dict:
-                if charset is not None:
-                    return self.loaded[t_path[0]][charset]
+                if charset_key is not None:
+                    return self.loaded[t_path[0]][charset_key]
                 elif int(t_path[1]) in self.loaded[t_path[0]].keys():
                     return self.loaded[t_path[0]][int(t_path[1])]
             elif type(texture) == list:

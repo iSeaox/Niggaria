@@ -15,7 +15,7 @@ CHUNK_WIDTH = 32
 
 class World(serializable.Serializable):
 
-    def __init__(self, size=50):
+    def __init__(self, size=100):
         self.entities = {}
         self.size = size  # en nombre de chunk
 
