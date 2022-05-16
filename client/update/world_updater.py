@@ -1,7 +1,4 @@
-
-
 class WorldUpdater:
-
     def __init__(self, entity_updater):
         self.entity_updater = entity_updater
         self.local_player = None
@@ -9,4 +6,4 @@ class WorldUpdater:
         self.buffers = {}
 
     def update(self, world):
-        self.entity_updater.update(world.entities)
+        self.entity_updater.update(world)

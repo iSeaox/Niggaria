@@ -12,6 +12,6 @@ class Packet(serializable.Serializable):
         self.type = "AbstractPacket"
         self.timestamp = None
 
-    def serialize(self) -> str:
+    def serialize(self):
         self.timestamp = time.time_ns()
         return str(super().serialize()).replace("'", '"').replace("True", "true").replace("False", "false").replace("None", "null")

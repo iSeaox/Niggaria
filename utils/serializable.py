@@ -1,34 +1,42 @@
 import sys
 
+from pygame import Vector2
+
 import utils.deserialization_error as des_error
 
 AUTHORIZED_TYPE = (int, str, bool, float)
 
 
 class Serializable:
-    def serialize(self):
+    def serialize(self, omit=None):
         json_dict = {}
         for key in self.__dict__.keys():
-            if type(self.__dict__[key]) in AUTHORIZED_TYPE or self.__dict__[key] is None:
-                json_dict[key] = self.__dict__[key]
-            elif type(self.__dict__[key]) == list:
-                json_dict[key] = []
-                for item in self.__dict__[key]:
-                    if type(item) in AUTHORIZED_TYPE:
-                        json_dict[key].append(item)
-                    else:
-                        json_dict[key].append(item.serialize())
+            if key != omit:
+                if type(self.__dict__[key]) in AUTHORIZED_TYPE or self.__dict__[key] is None:
+                    json_dict[key] = self.__dict__[key]
+                elif type(self.__dict__[key]) == Vector2:
+                    json_dict[key] = {"x": self.__dict__[key].x, "y": self.__dict__[key].y, "extended_type": "Vector2"}
+                elif type(self.__dict__[key]) == list:
+                    json_dict[key] = []
+                    for item in self.__dict__[key]:
+                        if type(item) in AUTHORIZED_TYPE:
+                            json_dict[key].append(item)
+                        else:
+                            json_dict[key].append(item.serialize())
 
-            elif type(self.__dict__[key]) == dict:
-                json_dict[key] = {}
-                for subdict_key in self.__dict__[key].keys():
-                    json_dict[key][subdict_key] = self.__dict__[key][subdict_key].serialize()
-            else:
-                json_dict[key] = self.__dict__[key].serialize()
+                elif type(self.__dict__[key]) == dict:
+                    json_dict[key] = {}
+                    for subdict_key in self.__dict__[key].keys():
+                        json_dict[key][subdict_key] = self.__dict__[key][subdict_key].serialize()
+                else:
+                    json_dict[key] = self.__dict__[key].serialize()
 
         json_dict["extended_type"] = self.__module__ + "." + self.__class__.__name__
 
         return json_dict
+
+    def to_bytes(self):
+        pass
 
 
 def deserialize(json_dict):
@@ -66,6 +74,8 @@ def deserialize(json_dict):
 
             return new_obj
 
+        elif extended_type == 'Vector2':
+            return Vector2(json_dict['x'], json_dict['y'])
         else:
             raise des_error.DeserializationError("Can't deserialize : module not found")
     else:
@@ -90,6 +100,7 @@ def __deserialize_dict(json_dict):
 
     for key in json_dict.keys():
         # KEY CHECK
+        effective_key = key
         if type(key) in AUTHORIZED_TYPE:
             effective_key = key
         elif type(key) == dict and "extended_type" in key.keys():

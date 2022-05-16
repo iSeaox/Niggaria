@@ -1,0 +1,149 @@
+{
+  "type": "sheet/block",
+  "file": "textures/block/solid/dirt.png",
+  "name": "block.solid.dirt",
+  "sheet": {
+    "items": [
+      {
+        "property": 3825205248,
+        "x": 0,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1811939328,
+        "x": 16,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1879048192,
+        "x": 32,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 738197504,
+        "x": 48,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1275068416,
+        "x": 64,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 2751463424,
+        "x": 0,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 3288334336,
+        "x": 16,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 2214592512,
+        "x": 32,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 2147483648,
+        "x": 48,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1610612736,
+        "x": 64,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 805306368,
+        "x": 0,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1342177280,
+        "x": 16,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 536870912,
+        "x": 32,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1073741824,
+        "x": 48,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 201326592,
+        "x": 64,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1627389952,
+        "x": 0,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1644167168,
+        "x": 16,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1660944384,
+        "x": 32,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 268435456,
+        "x": 48,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 0,
+        "x": 64,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    ]
+  }
+}
