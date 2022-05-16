@@ -11,7 +11,7 @@ def render_text(text, texture_handler, size=1, charset="gui.text.FR_charset", in
         if char == " ":
             s_char = pygame.Surface((space, 1))
         else:
-            s_char = texture_handler.get_texture("gui.text.FR_charset", charset_key=char)
+            s_char = texture_handler.get_texture("gui.text.FR_charset")[char]
             s_char = texture_handler.resize(s_char, size_coef=size)
 
         width += s_char.get_width() + inter_space

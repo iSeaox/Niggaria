@@ -6,7 +6,7 @@ import network.net_preprocessor as net_preprocessor
 
 class TCPListener(threading.Thread):
     def __init__(self, logger, connection, pipeline, id, debug=False):
-        threading.Thread.__init__(self, name="tcp-listener-" + str(id), daemon=True)
+        threading.Thread.__init__(self, name="tcp-listener-"+str(id), daemon=True)
         self.logger = logger
         self.connection = connection
         self.pipeline = pipeline
@@ -14,19 +14,22 @@ class TCPListener(threading.Thread):
 
     def run(self):
         temp_packet = b''
+        # i = 0
         while True:
             try:
                 data = self.connection.recv(4096)
+                # print(i)
                 temp_packet += data
+                # i += 1
 
                 if len(data) != 4096 or data[len(data) - 1] == 125:  # 125 est le code b'}'
                     if self.__debug:
                         self.logger.log(str((self.connection.getpeername(), temp_packet)), subject="debug")
 
-                    remain, splitted_packet = net_preprocessor.preprocess_packet((self.connection.getpeername(), temp_packet))
+                    splitted_packet = net_preprocessor.preprocess_packet((self.connection.getpeername(), temp_packet))
                     for pck in splitted_packet:
                         self.pipeline.queue.put(pck)
-                    temp_packet = str.encode(remain)
+                    temp_packet = b''
 
             except ConnectionResetError:
                 break

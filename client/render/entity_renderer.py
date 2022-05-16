@@ -10,7 +10,7 @@ def render_entity(screen, entity, view, texture_handler):
         pseudo_font = pygame.font.Font(None, 20)
         s_text = pseudo_font.render(entity.name + " | " + entity.instance_uid, True, (0xA0, 0xA0, 0xA0))
 
-        (real_x, real_y) = view.convert_position((entity.predicted_x, entity.predicted_y))
+        (real_x, real_y) = view.convert_position((entity.position.x, entity.position.y))
 
         if real_x > 0:
             real_x = math.floor(real_x)

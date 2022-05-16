@@ -1,6 +1,5 @@
 import world.world as world
 
-import client.render.bit_mask as bit_mask
 
 class View:
     def __init__(self, pos, followed_entity, screen_size, render_distance, world_size, bound=(0.45, 0.55)):
@@ -11,9 +10,7 @@ class View:
         self.last_pos_entity = ()
         self.block_width = 32
         self.render_distance = render_distance
-        self.depth_fog_radius = 3
         self.world_size = world_size
-        self.render_mask = bit_mask.BitMask(self.screen_size[0] // self.block_width, self.screen_size[1] // self.block_width)
 
     def convert_position(self, e_pos):
         if e_pos[0] > self.pos[0] + self.render_distance * world.CHUNK_WIDTH:

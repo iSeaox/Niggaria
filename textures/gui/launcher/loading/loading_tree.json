@@ -1,7 +1,7 @@
 {
   "type": "strip/textures",
   "file": "textures/gui/launcher/loading/loading_tree.png",
-  "name": "gui.launcher.loading_tree",
+  "name": "gui.launcher.loading.loading_tree",
   "format": {
     "height": 128,
     "width": 128
