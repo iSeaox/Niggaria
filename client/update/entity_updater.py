@@ -20,6 +20,7 @@ class EntityUpdater:
         self.__fps = client_fps
 
         self.local_player = None
+        self.last_timestamp = None
 
     def update(self, world):
         self.local_player.velocity += self.local_player.acceleration
@@ -69,8 +70,9 @@ class EntityUpdater:
 
     def push_local_action(self, action):
         if action.type == "entity_move_action":
-            print(f'SELF : {action.entity.position.x} {action.entity.position.y}')
-            self.local_player.position = action.entity.position
+            if action.timestamp == self.last_timestamp:
+                print(f'SELF : {action.entity.position.x} {action.entity.position.y}')
+                self.local_player.position = action.entity.position
         else:
             if action.type == "key_action":
                 if action.action == key_action.ACTION_DOWN:

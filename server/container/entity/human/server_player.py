@@ -30,31 +30,31 @@ class ServerPlayer:
             if action['action'] == key_action.ACTION_DOWN:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(1, 0)
-                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], self.player.velocity)
+                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], -self.player.velocity + (self.player.velocity + Vector2(1, 0)))
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(-1, 0)
-                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], self.player.velocity)
+                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], -self.player.velocity + (self.player.velocity + Vector2(-1, 0)))
                 elif action['key'] == key_action.KEY_JUMP:
                     pass
                     # self.player.acceleration += Vector2(0, 0.5)
             elif action['action'] == key_action.ACTION_UP:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(-1, 0)
-                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], Vector2(-1, 0))
+                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], -self.player.velocity + (self.player.velocity + Vector2(-1, 0)))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]
                     em_packets.append(action_transfert_packet.ActionTransfertPacket(em_action, True).serialize())
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(1, 0)
-                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], Vector2(1, 0))
+                    self.player.position += self.get_mouvement_with_timestep(self.clock.get_time() - data['timestamp'], -self.player.velocity + (self.player.velocity + Vector2(1, 0)))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]
                     em_packets.append(action_transfert_packet.ActionTransfertPacket(em_action, True).serialize())
 
         return em_packets
-    
+
     def update_player(self, world_size):
         self.player.velocity += self.player.acceleration
         self.player.acceleration = Vector2(0, 0)
