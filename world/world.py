@@ -11,11 +11,12 @@ import block.solid.dirt as b_dirt
 import utils.file_utils as file_utils
 
 CHUNK_WIDTH = 32
+CHUNK_HEIGHT = 256
 
 
 class World(serializable.Serializable):
 
-    def __init__(self, size=100):
+    def __init__(self, size=50):
         self.entities = {}
         self.size = size  # en nombre de chunk
 
@@ -40,13 +41,14 @@ class World(serializable.Serializable):
         plt.show()
 
         for i in range(self.size):
-            new_chunk = chunk.Chunk(i, CHUNK_WIDTH).gen(sum_noise)
+            new_chunk = chunk.Chunk(i, CHUNK_WIDTH, CHUNK_HEIGHT).gen(sum_noise)
             self.chunks.append(new_chunk)
 
         blocks = {}
         for c in self.chunks:
             for b in c.blocks:
-                blocks[(b.x, b.y)] = b
+                if(b != 0):
+                    blocks[(b.x, b.y)] = b
 
         for b_pos in blocks.keys():
             blocks[b_pos].property = 0
@@ -118,9 +120,8 @@ class World(serializable.Serializable):
     def get_block_at(self, pos, block_dlist=None):
         if block_dlist is None:
             chunk = self.get_chunk(pos[0] // CHUNK_WIDTH)
-            for block in chunk.blocks:
-                if (block.x, block.y) == pos:
-                    return block
+            return chunk.get_block_at(x, y)
+
         elif pos in block_dlist.keys():
             return block_dlist[pos]
         return
