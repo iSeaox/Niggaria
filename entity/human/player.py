@@ -13,6 +13,9 @@ class Player(entity.Entity):
         self.uuid = uuid
         self.name = name  # max 25 caractère
 
+        self.x = 20
+        self.y = 30
+
     def to_bytes(self):
 
         # | entity_bytes... | uuid (36 bytes) | name (25 bytes)

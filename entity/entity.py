@@ -1,7 +1,5 @@
 import struct
 
-from pygame import Vector2
-
 import utils.serializable as serializable
 import utils.uid_generator as uid_generator
 
@@ -15,14 +13,22 @@ class Entity(serializable.Serializable):
         self.id = ABSTRACT_ENTITY
         self.instance_uid = uid_generator.gen_uid(8)
 
-        self.position = Vector2(0, 0)
-        self.velocity = Vector2(0, 0)
-        self.acceleration = Vector2(0, 0)
+        # self.position = Vector2(0, 0)
+        # self.velocity = Vector2(0, 0)
+        # self.acceleration = Vector2(0, 0)
+
+        self.x = 0
+        self.y = 0
+
+        self.predicted_x = 0
+        self.predicted_y = 0
+
+        self.velocity = [0, 0]
 
     def to_bytes(self):
         # | id (2 bytes) | uid (8 bytes) | x (8 bytes) | y (8 bytes) |
         content = struct.pack("H", self.id)
         content += str.encode(self.instance_uid)
-        content += struct.pack("dd", self.position.x, self.position.y)
+        content += struct.pack("dd", self.x, self.y)
 
         return content

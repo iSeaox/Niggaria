@@ -46,18 +46,20 @@ class Client:
         self.__world = None
         self.__clock = clock.Clock(self.__fps)
 
-        self.__entity_updater = entity_updater.EntityUpdater(self.__fps)
+        self.__entity_updater = entity_updater.EntityUpdater()
         self.__world_updater = world_updater.WorldUpdater(self.__entity_updater)
 
         self.__loading = True
         self.profile = None
 
         self.__actions_buffer = []
+        self.__key_buffer = {0: False, 1: False, 2: False}
 
         self.server_access = server_access
         self.logger = logger
         self.__net_buffer_size = 1024 * 256
 
+        self.buffer = []
         self.udp_queue = queue.Queue(maxsize=0)
         self.tcp_queue = queue.Queue(maxsize=0)
 
@@ -105,31 +107,55 @@ class Client:
             if event.type == pygame.QUIT:
                 self.__run = False
             elif event.type == pygame.KEYDOWN:
-                new_action = None
-                if event.key == pygame.K_d:
+                if event.key == 100:
+                    self.__key_buffer[key_action.KEY_RIGHT] = True
+
                     new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_DOWN)
-                elif event.key == pygame.K_q:
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__udp_socket.sendto(str.encode(raw_packet), self.server_access)
+
+                elif event.key == 113:
+                    self.__key_buffer[key_action.KEY_LEFT] = True
+
                     new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_DOWN)
-                elif event.key == pygame.K_SPACE:
-                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_DOWN)
-                if new_action:
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__entity_updater.last_timestamp = self.__clock.get_time()
-                    self.send_udp_packet(str.encode(raw_packet))
+                    self.__udp_socket.sendto(str.encode(raw_packet), self.server_access)
+
+                # elif(event.key == 32):
+                #     self.__key_buffer[key_action.KEY_JUMP] = True
+                #     if(self.__player.predicted_y == 25):
+                #         pass
+                #         self.__player.velocity[1] = 0.9
+                #
+                #     new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_DOWN)
+                #     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                #     self.__udp_socket.sendto(str.encode(raw_packet), self.server_access)
+
             elif event.type == pygame.KEYUP:
-                new_action = None
-                if event.key == pygame.K_d:
+                if event.key == 100:
+                    self.__key_buffer[key_action.KEY_RIGHT] = False
+
                     new_action = key_action.KeyAction(key_action.KEY_RIGHT, key_action.ACTION_UP)
-                elif event.key == pygame.K_q:
-                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_UP)
-                elif event.key == pygame.K_SPACE:
-                    new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
-                if new_action:
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__entity_updater.last_timestamp = self.__clock.get_time()
-                    self.send_udp_packet(str.encode(raw_packet))
+                    self.__udp_socket.sendto(str.encode(raw_packet), self.server_access)
+
+                elif event.key == 113:
+                    self.__key_buffer[key_action.KEY_LEFT] = False
+                    new_action = key_action.KeyAction(key_action.KEY_LEFT, key_action.ACTION_UP)
+                    self.__entity_updater.push_local_action(new_action)
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                    self.__udp_socket.sendto(str.encode(raw_packet), self.server_access)
+
+                # elif(event.key == 32):
+                #     self.__key_buffer[key_action.KEY_JUMP] = False
+                #
+                #     new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
+                #     self.__entity_updater.push_local_action(new_action)
+                #     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
+                #     self.__udp_socket.sendto(str.encode(raw_packet), self.server_access)
 
         if self.debug_map_gen:
             speed = 2
@@ -141,6 +167,10 @@ class Client:
                 self.view.pos = (self.view.pos[0], self.view.pos[1] - speed)
             elif pygame.key.get_pressed()[1073741906]:
                 self.view.pos = (self.view.pos[0], self.view.pos[1] + speed)
+
+        # --------- PACKET HANDLING ---------
+        # if(len(self.buffer) > 0):
+        #     print(self.buffer)
 
         packets = net_preprocessor.gen_packet_list(self.tcp_queue)
         for r_packet in packets:
@@ -156,8 +186,8 @@ class Client:
                     self.__world.remove_player_entity(packet_player)
                     self.logger.log(packet_player.name + " left the game", subject="quit")
 
-        while not self.udp_queue.empty():
-            raw = self.udp_queue.get()
+        while len(self.buffer) > 0:
+            raw = self.buffer[0]
             packet = json.loads(raw[0].decode())
 
             if packet["type"] == "action_transfert_packet":
@@ -167,6 +197,9 @@ class Client:
                         self.__entity_updater.push_local_action(em_action)
                     else:
                         self.__entity_updater.push_action(em_action.entity, em_action)
+
+            self.buffer = self.buffer[1:]
+        # -------------------------------------
 
         self.__world_updater.update(self.__world)
 
@@ -178,6 +211,7 @@ class Client:
 
     def render(self, screen):
         screen.fill((0, 0, 0))
+
         world_renderer.render_world(screen, self.__world, self.view, self.texture_handler)
 
     def send_udp_packet(self, packet):

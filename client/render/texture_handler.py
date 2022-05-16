@@ -24,7 +24,8 @@ class TextureHandler:
                 textures_info = {}
                 with open(path + file, "r", encoding="UTF-8") as json_file:
                     textures_info = json.load(json_file)
-                    self.__load(textures_info)
+                    if not textures_info["name"] in self.loaded.keys():
+                        self.__load(textures_info)
 
     def __load(self, info):
         t_type = info["type"].split("/")
@@ -37,7 +38,7 @@ class TextureHandler:
                 strip = []
                 cursor = 0
                 while cursor < raw_image.get_width():
-                    strip.append(raw_image.subsurface(pygame.Rect((cursor, 0, info["format"]["width"], info["format"]["height"]))).copy())
+                    strip.append(self.resize(raw_image.subsurface(pygame.Rect((cursor, 0, info["format"]["width"], info["format"]["height"]))).copy(), size_coef=2))
                     self.loaded[info["name"]] = strip
                     self.logger.log(info["name"] + " loaded", subject="load")
                     cursor += info["format"]["width"]
@@ -62,11 +63,11 @@ class TextureHandler:
 
     def __load_sheet_gui(self, info, raw_image):
         items = info["sheet"]["items"]
-
         for item in items:
-            new_sur = raw_image.subsurface(pygame.Rect((item["x"], item["y"], item["width"], item["height"])))
-            self.loaded[info["name"] + "." + item["name"]] = new_sur
-            self.logger.log(info["name"] + "." + item["name"] + " loaded", subject="load")
+            if not info["name"] + "." + item["name"] in self.loaded.keys():
+                new_sur = raw_image.subsurface(pygame.Rect((item["x"], item["y"], item["width"], item["height"])))
+                self.loaded[info["name"] + "." + item["name"]] = new_sur
+                self.logger.log(info["name"] + "." + item["name"] + " loaded", subject="load")
 
     def __load_sheet_charset(self, info, raw_image):
         organization = info["charset"]["organisation"]
@@ -87,18 +88,31 @@ class TextureHandler:
         self.loaded[info["name"]] = new_entries
         self.logger.log(info["name"] + " loaded", subject="load")
 
-    def get_texture(self, texture_path):
+    def get_texture(self, texture_path, variant=0, charset_key=None):
         t_path = texture_path.split(":")
-        if len(t_path) == 2:
-            if t_path[0] in self.loaded.keys() and int(t_path[1]) in self.loaded[t_path[0]].keys():
-                return self.loaded[t_path[0]][int(t_path[1])]
+        if t_path[0] in self.loaded.keys():
+            texture = self.loaded[t_path[0]]
+            if type(texture) == dict:
+                if charset_key is not None:
+                    if charset_key in texture.keys():
+                        return self.loaded[t_path[0]][charset_key]
+                    else:
+                        return self.loaded["unknown"]
+
+                elif int(t_path[1]) in texture.keys():
+                    return texture[int(t_path[1])]
+                else:
+                    print("Cette texture n'existe pas : " + texture_path)
+                    return self.loaded["unknown"]
+
+            elif type(texture) == list:
+                return texture[variant]
             else:
-                raise KeyError("Cette texture n'existe pas : " + texture_path)
+                return texture
         else:
-            if t_path[0] in self.loaded.keys():
-                return self.loaded[t_path[0]]
-            else:
-                raise KeyError("Cette texture n'existe pas : " + texture_path)
+            # raise KeyError("Cette texture n'existe pas : " + texture_path)
+            print("Cette texture n'existe pas : " + texture_path)
+            return self.loaded["unknown"]
 
     @staticmethod
     def resize(surface, size_coef):

@@ -30,21 +30,7 @@ class Dirt(block.Block):
     #   Corner_adjust -> 1 = left, 2 = right, 3 = both
     def __init__(self, x=None, y=None, property=0):
         super().__init__(x, y, "dirt", property)
-        # print("-------")
-        # print(PROPERTY_SIMPLE | PROPERTY_SIDE_MID | PROPERTY_GRASS)
-        # print(PROPERTY_SIDE_MID |PROPERTY_HEIGHT_TOP | PROPERTY_GRASS)
-        # print(PROPERTY_SIDE_MID | PROPERTY_HEIGHT_DOWN)
-        # print(PROPERTY_SIDE_LEFT | PROPERTY_HEIGHT_TOP | PROPERTY_GRASS)
-        # print(PROPERTY_SIDE_RIGHT | PROPERTY_HEIGHT_TOP | PROPERTY_GRASS)
-        # print(PROPERTY_SIMPLE | PROPERTY_SIDE_LEFT | PROPERTY_GRASS)
-        # print(PROPERTY_SIMPLE | PROPERTY_SIDE_RIGHT | PROPERTY_GRASS)
-        # print(PROPERTY_SIMPLE | PROPERTY_BOTH_SIDE | PROPERTY_GRASS)
-        # print(PROPERTY_SIMPLE | PROPERTY_BOTH_SIDE)
-        # print(PROPERTY_SIDE_MID | PROPERTY_HEIGHT_CENTER)
-        # print(PROPERTY_HEIGHT_DOWN | PROPERTY_SIDE_LEFT)
-        # print(PROPERTY_HEIGHT_DOWN | PROPERTY_SIDE_RIGHT)
-        # print(PROPERTY_SIDE_LEFT | PROPERTY_HEIGHT_CENTER)
-        # print(PROPERTY_SIDE_RIGHT | PROPERTY_HEIGHT_CENTER)
-        #
-        # print("-------")
         self.id = block.DIRT_BLOCK
+
+    def is_solid(self):
+        return True

@@ -14,6 +14,7 @@ class Button(clickable.ClickableContent):
         self.trigger_method = trigger_method
         self.label = label
 
+
     def click(self, click_type):
         self.trigger_method(click_type)
 
