@@ -58,6 +58,9 @@ class EntityUpdater:
                     if previous_pos != () and next_pos != ():
                         dist_x = (next_pos[0] - previous_pos[0])
                         delta_t = next_timestamp - previous_timestamp
+                        if delta_t == 0:
+                            print(f'ARRGHH HEIN ERREUR : delta_t dans entity_updater vaut 0 -> {next_timestamp}, {previous_timestamp}')
+                            continue
 
                         delta_x = (interpolate_timestamp - previous_timestamp) * dist_x / delta_t
                         if delta_x < delta_x_max:
@@ -71,7 +74,7 @@ class EntityUpdater:
     def push_local_action(self, action):
         if action.type == "entity_move_action":
             if action.timestamp == self.last_timestamp:
-                print(f'SELF : {action.entity.position.x} {action.entity.position.y}')
+                # print(f'SELF : {action.entity.position.x} {action.entity.position.y}')
                 self.local_player.position = action.entity.position
         else:
             if action.type == "key_action":
@@ -93,4 +96,4 @@ class EntityUpdater:
         if not(entity.instance_uid in self.buffers.keys()):
             self.buffers[entity.instance_uid] = []
         self.buffers[entity.instance_uid].append((self.clock.get_time(), action))
-        print(f'OTHER : {action.entity.position.x} SELF : {self.local_player.position.x}')
+        # print(f'OTHER : {action.entity.position.x} SELF : {self.local_player.position.x}')
