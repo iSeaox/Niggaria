@@ -46,8 +46,8 @@ class World(serializable.Serializable):
 
         blocks = {}
         for c in self.chunks:
-            for b in c.blocks.values():
-                if(b != 0):
+            for b in c.blocks:
+                if b != 0:
                     blocks[(b.x, b.y)] = b
 
         for b_pos in blocks.keys():
@@ -120,7 +120,7 @@ class World(serializable.Serializable):
     def get_block_at(self, pos, block_dlist=None):
         if block_dlist is None:
             chunk = self.get_chunk(pos[0] // CHUNK_WIDTH)
-            return chunk.get_block_at(x, y)
+            return chunk.get_block_at(pos[0], pos[1])
 
         elif pos in block_dlist.keys():
             return block_dlist[pos]
