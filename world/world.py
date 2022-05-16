@@ -23,7 +23,7 @@ class World(serializable.Serializable):
         self.chunks = []
 
     def gen(self):
-        nb_point = 15
+        nb_point = 26
 
         gen_noise = noise.gen_smooth_noise(nb_point, (self.size * CHUNK_WIDTH) // (nb_point - 1), diff_max=2)
         gen_noise_bis = noise.gen_smooth_noise(nb_point * 2, (self.size * CHUNK_WIDTH) // (nb_point - 1) // 6, diff_max=2)
@@ -46,7 +46,7 @@ class World(serializable.Serializable):
 
         blocks = {}
         for c in self.chunks:
-            for b in c.blocks:
+            for b in c.blocks.values():
                 if(b != 0):
                     blocks[(b.x, b.y)] = b
 

@@ -6,6 +6,7 @@ import utils.serializable as serializable
 import block.solid.dirt as b_dirt
 import block.decoration.plant as b_plant
 
+
 class Chunk(serializable.Serializable):
 
     def __init__(self, chunk_x=None, chunk_width=32, chunk_height=256):

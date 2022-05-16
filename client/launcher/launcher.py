@@ -116,6 +116,7 @@ class Launcher:
                 if int(packet["id"]) == self.client.get_world().size - 1:
                     self.logger.log("---------------------------------")
                     self.client.texture_handler.load_textures(part="block")
+                    self.client.texture_handler.load_textures(part="")
                     self.is_active = False
         # -----------------------------
 

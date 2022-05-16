@@ -1,0 +1,16 @@
+{
+  "type": "sheet/gui",
+  "file": "textures/miscellaneous/depth_fog.png",
+  "name": "miscellaneous.depth_fog",
+  "sheet": {
+    "items": [
+      {
+        "name": "center",
+        "x": 16,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    ]
+  }
+}

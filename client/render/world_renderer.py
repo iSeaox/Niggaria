@@ -19,13 +19,15 @@ def render_world(screen, world, view, texture_handler):
     for chunk in displayed_chunk:
         for block in chunk.blocks:
             if block != 0 and __is_visible(block, chunk, view, view.convert_position((block.x, block.y))):
-                screen.blit(texture_handler.get_texture(block.__module__ + ":" + str(block.property), variant=block.variant), view.convert_position((block.x, block.y)))
+                screen.blit(
+                    texture_handler.get_texture(block.__module__ + ":" + str(block.property), variant=block.variant),
+                    view.convert_position((block.x, block.y)))
+
 
 def __is_visible(block, chunk, view, converted_pos):
     sx, sy = converted_pos
     if (0 - view.block_width) <= sy <= view.screen_size[1]:
         if (0 - view.block_width) <= sx <= view.screen_size[0]:
-
             return True
 
     return False
