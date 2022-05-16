@@ -49,7 +49,8 @@ class Server:
         self.udp_listener = udp_listener.UDPListener(self.logger, self.__udp_socket, self.udp_queue)
         self.udp_listener.start()
 
-        self.tcp_pipeline = tcp_pipeline.TCPPipeLineServer(self.logger, self.tcp_queue, self.connection_lost_handler, debug=True)
+        self.tcp_pipeline = tcp_pipeline.TCPPipeLineServer(self.logger, self.tcp_queue, self.connection_lost_handler,
+                                                           debug=True)
         self.tcp_pipeline.start()
 
         self.__connected_players = []
@@ -100,18 +101,21 @@ class Server:
                     self.send_tcp_packet(temp_server_player, str.encode(wt_packet))
 
                     for i in range(self.server_world.size):
-                        ct_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk=self.server_world.chunks[i], id=i).serialize()
+                        ct_packet = chunk_transfert_packet.ChunkTransfertPacket(chunk=self.server_world.chunks[i],
+                                                                                id=i).serialize()
                         self.send_tcp_packet(temp_server_player, str.encode(ct_packet))
 
                     # ---- Others players ----
-                    con_packet = connection_packet.ConnectionPacket(temp_server_player.player, connection_packet.JOIN_SERVER).serialize()
+                    con_packet = connection_packet.ConnectionPacket(temp_server_player.player,
+                                                                    connection_packet.JOIN_SERVER).serialize()
                     for spl in self.__connected_players:
-                        if spl.profile.uuid != temp_server_player.profile.uuid:
+                        if (spl.profile.uuid != temp_server_player.profile.uuid):
                             self.send_tcp_packet(spl, str.encode(con_packet))
 
             elif packet["type"] == "quit_packet":
                 concerned_server_player = self.get_server_player_by_uuid(packet["profile"]["uuid"])
                 self.quit_player(concerned_server_player)
+
 
         # -------------------------- UDP Treatment -----------------------
         packets = net_preprocessor.gen_packet_list(self.udp_queue)

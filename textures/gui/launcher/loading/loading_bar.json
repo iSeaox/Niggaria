@@ -1,0 +1,30 @@
+{
+  "type": "sheet/gui",
+  "file": "textures/gui/launcher/loading/loading_bar.png",
+  "name": "gui.launcher.loading_bar",
+  "sheet": {
+    "items": [
+      {
+        "name": "empty_bar",
+        "x": 0,
+        "y": 0,
+        "width": 64,
+        "height": 8
+      },
+      {
+        "name": "fill_bar_step",
+        "x": 6,
+        "y": 8,
+        "width": 1,
+        "height": 6
+      },
+      {
+        "name": "next_bar_step",
+        "x": 0,
+        "y": 8,
+        "width": 5,
+        "height": 6
+      }
+    ]
+  }
+}
