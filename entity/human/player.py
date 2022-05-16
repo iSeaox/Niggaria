@@ -1,7 +1,6 @@
 import entity.entity as entity
-
-
-NAME_SIZE = 25
+import security.player_profile as player_profile
+from pygame import Vector2
 
 
 class Player(entity.Entity):
@@ -9,15 +8,7 @@ class Player(entity.Entity):
         super().__init__()
 
         self.type = "player"
-        self.id = entity.PLAYER_ENTITY
         self.uuid = uuid
-        self.name = name  # max 25 caractère
+        self.name = name
 
-    def to_bytes(self):
-
-        # | entity_bytes... | uuid (36 bytes) | name (25 bytes)
-        content = super().to_bytes()
-        content += str.encode(self.uuid)
-        content += str.encode(self.name) + b'\x00' * (NAME_SIZE - len(self.name))
-
-        return content
+        self.position = Vector2(20, 30)
