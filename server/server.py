@@ -57,6 +57,8 @@ class Server:
 
         self.server_world = world.World()
         self.server_world.gen()
+        self.server_world.load_bitmask()
+
 
         # self.server_world.to_files(r'.\data\server\world')
 

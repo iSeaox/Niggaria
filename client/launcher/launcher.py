@@ -115,6 +115,8 @@ class Launcher:
 
                 if int(packet["id"]) == self.client.get_world().size - 1:
                     self.logger.log("---------------------------------")
+                    self.client.get_world().load_bitmask()
+                    self.logger.log(f'loading of bit mask of the world (len : {len(self.client.get_world().solid_bitmask) / 8000} Ko)', subject="load")
                     self.client.texture_handler.load_textures(part="block")
                     self.client.texture_handler.load_textures(part="")
                     self.is_active = False

@@ -22,7 +22,6 @@ def render_world(screen, world, view, texture_handler):
     # RENDER OF ENTITIES
     for entity in world.entities.values():
         temp = entity_renderer.render_entity(screen, entity, view, texture_handler)
-        print(temp)
         if entity.instance_uid == view.followed_entity.instance_uid:
             view.last_pos_entity = temp
 

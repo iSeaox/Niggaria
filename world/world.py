@@ -9,6 +9,7 @@ import world.generator.noise as noise
 import block.solid.dirt as b_dirt
 
 import utils.file_utils as file_utils
+import utils.bit_mask as bit_mask
 
 CHUNK_WIDTH = 32
 CHUNK_HEIGHT = 256
@@ -18,6 +19,7 @@ class World(serializable.Serializable):
 
     def __init__(self, size=50):
         self.entities = {}
+        self.solid_bitmask = None
         self.size = size  # en nombre de chunk
 
         self.chunks = []
@@ -98,6 +100,15 @@ class World(serializable.Serializable):
 
         print("map width: ", (self.size * CHUNK_WIDTH))
 
+    def load_bitmask(self):
+        self.solid_bitmask = bit_mask.BitMask(CHUNK_WIDTH * self.size, CHUNK_HEIGHT)
+        for chunk in self.chunks:
+            for block in chunk.blocks:
+                if block != 0 and block.is_solid():
+                    self.solid_bitmask.set(block.y * self.size + block.x)
+
+        return self.solid_bitmask
+
     def get_chunk(self, chunk_x):
         return self.chunks[chunk_x % self.size]
 
@@ -112,7 +123,7 @@ class World(serializable.Serializable):
         self.entities[player_entity.instance_uid] = player_entity
 
     def serialize(self):
-        return super().serialize("chunks")
+        return super().serialize(("chunks","solid_bitmask"))
 
     def full_serialize(self):
         return super().serialize()

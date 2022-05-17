@@ -11,7 +11,9 @@ class Serializable:
     def serialize(self, omit=None):
         json_dict = {}
         for key in self.__dict__.keys():
-            if key != omit:
+            if omit != None and key in omit:
+                continue
+            else:
                 if type(self.__dict__[key]) in AUTHORIZED_TYPE or self.__dict__[key] is None:
                     json_dict[key] = self.__dict__[key]
                 elif type(self.__dict__[key]) == Vector2:
