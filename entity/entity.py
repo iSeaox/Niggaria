@@ -15,7 +15,7 @@ class Entity(serializable.Serializable):
         self.id = ABSTRACT_ENTITY
         self.instance_uid = uid_generator.gen_uid(8)
 
-        self.position = Vector2(0, 0)
+        self.position = Vector2(0, 50)
         self.velocity = Vector2(0, 0)
         self.acceleration = Vector2(0, 0)
 
