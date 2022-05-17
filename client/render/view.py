@@ -16,11 +16,11 @@ class View:
         self.render_mask = bit_mask.BitMask(self.screen_size[0] // self.block_width, self.screen_size[1] // self.block_width)
 
     def convert_position(self, e_pos):
-        if e_pos[0] > self.pos[0] + self.render_distance * world.CHUNK_WIDTH:
-            e_pos = (e_pos[0] - (self.world_size * world.CHUNK_WIDTH), e_pos[1])
-        elif e_pos[0] < self.pos[0] - self.render_distance * world.CHUNK_WIDTH:
+        # if e_pos[0] > self.pos[0] + self.render_distance * world.CHUNK_WIDTH:
+        #     e_pos = (e_pos[0] - (self.world_size * world.CHUNK_WIDTH), e_pos[1])
+        #     if e_pos[0] < 0: print(f'{(self.world_size * world.CHUNK_WIDTH)} : 2')
+        if e_pos[0] < self.pos[0] - self.render_distance * world.CHUNK_WIDTH:
             e_pos = ((self.world_size * world.CHUNK_WIDTH) + e_pos[0], e_pos[1])
-
         real_x = (e_pos[0] - self.pos[0]) * self.block_width
         real_y = self.screen_size[1] - (e_pos[1] - self.pos[1]) * self.block_width
 

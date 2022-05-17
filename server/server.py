@@ -158,6 +158,7 @@ class Server:
 
     def quit_player(self, serv_player):
         con_packet = connection_packet.ConnectionPacket(serv_player.player, connection_packet.QUIT_SERVER).serialize()
+        self.server_world.remove_player_entity(serv_player.player)
         self.__connected_players.remove(serv_player)
         self.logger.log(serv_player.profile.user + " left the game", subject="quit")
         for spl in self.__connected_players:
