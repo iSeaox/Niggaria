@@ -17,12 +17,12 @@
     },
     {
       "user": "pablo",
-      "uuid": "d69b8e32-fbe5-4fbd-ac89-a816369c3674 ",
+      "uuid": "d69b8e32-fbe5-4fbd-ac89-a816369c3674",
       "password": "pablo"
     },
     {
       "user": "regiano",
-      "uuid": "3d90fac5-5d74-4163-8867-154f329fef6d",
+      "uuid": "727103c8-2581-4222-a90b-3e4cd0ab6c21",
       "password": "regiano"
     },
     {
@@ -32,22 +32,22 @@
     },
     {
       "user": "carlo",
-      "uuid": "c322518a-2710-4d68-9a9a-17a20c6d0f90 ",
+      "uuid": "c322518a-2710-4d68-9a9a-17a20c6d0f90",
       "password": "carlo"
     },
     {
       "user": "rocco",
-      "uuid": "93c44ef8-9d10-4623-bfde-864d88149e12 ",
+      "uuid": "93c44ef8-9d10-4623-bfde-864d88149e12",
       "password": "rocco"
     },
     {
       "user": "tito",
-      "uuid": "03dd64c0-f390-4cb0-acf6-e076745f2b24 ",
+      "uuid": "03dd64c0-f390-4cb0-acf6-e076745f2b24",
       "password": "tito"
     },
     {
       "user": "nerio",
-      "uuid": "c1ee948c-898c-42f5-9b7e-24e6cb204e1c ",
+      "uuid": "c1ee948c-898c-42f5-9b7e-24e6cb204e1c",
       "password": "nerio"
     }
   ]
