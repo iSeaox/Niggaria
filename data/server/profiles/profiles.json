@@ -44,11 +44,11 @@
       "user": "tito",
       "uuid": "03dd64c0-f390-4cb0-acf6-e076745f2b24 ",
       "password": "tito"
-    }
-  ],
+    },
     {
       "user": "nerio",
       "uuid": "c1ee948c-898c-42f5-9b7e-24e6cb204e1c ",
       "password": "nerio"
     }
+  ]
 }
