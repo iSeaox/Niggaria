@@ -23,6 +23,7 @@ class EntityUpdater:
         self.last_timestamp = None
 
     def update(self, world):
+        self.local_player.acceleration += Vector2(0, -0.00001)
         self.local_player.velocity += self.local_player.acceleration
         self.local_player.acceleration = Vector2(0, 0)
         self.local_player.position += self.local_player.velocity * self.clock.time_step() / (1_000_000_000 / SERVER_TPS)
@@ -84,8 +85,7 @@ class EntityUpdater:
                     elif action.key == key_action.KEY_LEFT:
                         self.local_player.acceleration += Vector2(-1, 0)
                     elif action.key == key_action.KEY_JUMP:
-                        pass
-                        # self.local_player.acceleration += Vector2(0, 0.5)
+                        self.local_player.acceleration += Vector2(0, 0.01)
                 elif action.action == key_action.ACTION_UP:
                     if action.key == key_action.KEY_RIGHT:
                         self.local_player.acceleration += Vector2(-1, 0)

@@ -24,7 +24,6 @@ import utils.clock as clock
 
 import world.world as world
 
-
 SERVER_TPS = 20
 
 
@@ -58,7 +57,6 @@ class Server:
         self.server_world = world.World()
         self.server_world.gen()
         self.server_world.load_bitmask()
-
 
         # self.server_world.to_files(r'.\data\server\world')
 
@@ -111,13 +109,12 @@ class Server:
                     con_packet = connection_packet.ConnectionPacket(temp_server_player.player,
                                                                     connection_packet.JOIN_SERVER).serialize()
                     for spl in self.__connected_players:
-                        if (spl.profile.uuid != temp_server_player.profile.uuid):
+                        if spl.profile.uuid != temp_server_player.profile.uuid:
                             self.send_tcp_packet(spl, str.encode(con_packet))
 
             elif packet["type"] == "quit_packet":
                 concerned_server_player = self.get_server_player_by_uuid(packet["profile"]["uuid"])
                 self.quit_player(concerned_server_player)
-
 
         # -------------------------- UDP Treatment -----------------------
         packets = net_preprocessor.gen_packet_list(self.udp_queue)
