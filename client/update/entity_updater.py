@@ -23,10 +23,11 @@ class EntityUpdater:
         self.last_timestamp = None
 
     def update(self, world):
-        self.local_player.acceleration += Vector2(0, -0.00001)
+        timestep = self.clock.time_step()
+        self.local_player.acceleration += Vector2(0, -0.001) * (timestep / (1_000_000_000 / SERVER_TPS))
         self.local_player.velocity += self.local_player.acceleration
         self.local_player.acceleration = Vector2(0, 0)
-        self.local_player.position += self.local_player.velocity * self.clock.time_step() / (1_000_000_000 / SERVER_TPS)
+        self.local_player.position += self.local_player.velocity * (timestep / (1_000_000_000 / SERVER_TPS))
         # La division par 4 est arbitraire, son but est de rendre une acceleration de 1 un vitesse apparente raisonnable.
 
         self.local_player.position.x %= world.size * CHUNK_WIDTH
