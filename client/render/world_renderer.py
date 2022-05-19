@@ -28,29 +28,22 @@ def render_world(screen, world, view, texture_handler):
 
 def __is_visible(block, world, view, converted_pos):
     sx, sy = converted_pos
+    bx, by = block.x, block.y
     if (0 - view.block_width) <= sy <= view.screen_size[1]:
         if (0 - view.block_width) <= sx <= view.screen_size[0]:
-            # adj_block = __get_adjacent_blocks(block, world)
-            #
-            # for b in adj_block:
-            #     if b == 0 or not b.is_solid():
-            #         return True
             return True
+            # return not __is_fog(world, block)
 
     return False
 
 
-def __get_adjacent_blocks(block, world, radius=5):
-    temp = []
-    bx = block.x
-    by = block.y
-    it_range = [i for i in range(-radius, radius + 1) if i != 0]
+def __is_fog(world, block):
+    bx, by = block.x, block.y
+    bitmask = world.solid_bitmask
 
-    for x_off in it_range:
-        for y_off in it_range:
-            sbx = (bx + x_off) % (world.size * CHUNK_WIDTH)
-            sby = by + y_off
-
-            if (sbx - bx) ** 2 + (sby - by) ** 2 <= radius ** 2:
-                temp.append(world.get_block_at((sbx, sby)))
-    return temp
+    if bitmask.is_set((bx + 1) + by * world.size * CHUNK_WIDTH):
+        if bitmask.is_set((bx - 1) + by * world.size * CHUNK_WIDTH):
+            if bitmask.is_set(bx + (by + 1) * world.size * CHUNK_WIDTH):
+                if bitmask.is_set(bx + (by - 1) * world.size * CHUNK_WIDTH):
+                    return True
+    return False
