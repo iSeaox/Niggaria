@@ -24,6 +24,9 @@ class World(serializable.Serializable):
 
         self.chunks = []
 
+        # ----- Client Side --------
+        self.fog_bitmask = None
+
     def gen(self):
         nb_point = 26
 
@@ -105,9 +108,27 @@ class World(serializable.Serializable):
         for chunk in self.chunks:
             for block in chunk.blocks:
                 if block != 0 and block.is_solid():
-                    self.solid_bitmask.set(block.y * self.size + block.x)
+                    self.solid_bitmask.set(block.x, block.y)
 
         return self.solid_bitmask
+
+    def load_fog_bitmask(self, radius=5):
+        self.fog_bitmask = bit_mask.BitMask(CHUNK_WIDTH * self.size, CHUNK_HEIGHT)
+        for offset in range(len(self.solid_bitmask)):
+            if self.solid_bitmask.is_set(offset):
+                x, y = self.fog_bitmask.convert_offset(offset)
+
+                working_interval = [i for i in range(-radius, radius + 1)]
+                working_interval.remove(0)
+                for dx in working_interval:
+                    for dy in working_interval:
+                        if dx * dx + dy * dy <= radius * radius:
+                            if not self.solid_bitmask.is_set(dx + x, dy + y):
+                                self.fog_bitmask.clear(x, y)
+                                break
+                            else:
+                                self.fog_bitmask.set(x, y)
+
 
     def get_chunk(self, chunk_x):
         return self.chunks[chunk_x % self.size]
@@ -123,7 +144,7 @@ class World(serializable.Serializable):
         self.entities[player_entity.instance_uid] = player_entity
 
     def serialize(self):
-        return super().serialize(("chunks","solid_bitmask"))
+        return super().serialize(("chunks","solid_bitmask", "fog_bitmask"))
 
     def full_serialize(self):
         return super().serialize()

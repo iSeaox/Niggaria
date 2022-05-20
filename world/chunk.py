@@ -25,7 +25,7 @@ class Chunk(serializable.Serializable):
 
         for i in range(self.chunk_width):
             x = i + self.chunk_width * self.chunk_x
-            y = round(40 + noise[1][x % len(noise[1])] * max_height)
+            y = round(80 + noise[1][x % len(noise[1])] * max_height)
             temp = b_dirt.PROPERTY_SIMPLE | b_dirt.PROPERTY_BOTH_SIDE
 
             plant_value = abs(noise[1][(x * 10) % len(noise[1])])
