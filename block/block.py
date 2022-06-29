@@ -2,8 +2,9 @@ import struct
 
 import utils.serializable as serializable
 
-STONE_BLOCK = 0
-DIRT_BLOCK = 1
+AIR_BLOCK = 0
+STONE_BLOCK = 1
+DIRT_BLOCK = 2
 
 
 class Block(serializable.Serializable):
@@ -21,4 +22,10 @@ class Block(serializable.Serializable):
         return struct.pack("HBI ii", self.id, self.variant, self.property, self.x, self.y)
 
     def is_solid(self):
+        raise NotImplementedError()
+
+    def is_air(self):
+        raise NotImplementedError()
+
+    def set_property(self, *args):
         raise NotImplementedError()

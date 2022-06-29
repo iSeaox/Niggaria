@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import utils.serializable as serializable
 
 import world.chunk as chunk
-import world.generator.noise as noise
+import world.noise.noise_handler as noise_handler
 
 import block.solid.dirt as b_dirt
+import block.air as b_air
 
 import utils.file_utils as file_utils
 import utils.bit_mask as bit_mask
@@ -17,7 +18,7 @@ CHUNK_HEIGHT = 256
 
 class World(serializable.Serializable):
 
-    def __init__(self, size=50):
+    def __init__(self, size=64):
         self.entities = {}
         self.solid_bitmask = None
         self.size = size  # en nombre de chunk
@@ -25,25 +26,9 @@ class World(serializable.Serializable):
         self.chunks = []
 
     def gen(self):
-        nb_point = 26
-
-        gen_noise = noise.gen_smooth_noise(nb_point, (self.size * CHUNK_WIDTH) // (nb_point - 1), diff_max=2)
-        gen_noise_bis = noise.gen_smooth_noise(nb_point * 2, (self.size * CHUNK_WIDTH) // (nb_point - 1) // 6, diff_max=2)
-
-        fig, (ax1, ax2, ax3) = plt.subplots(3)
-        ax1.plot(gen_noise[0], gen_noise[1], "ro")
-        ax2.plot(gen_noise_bis[0], gen_noise_bis[1], "ro")
-
-        sum_noise = ([], [])
-        for i in range(len(gen_noise[0])):
-            sum_noise[0].append(gen_noise[0][i])
-            sum_noise[1].append(gen_noise[1][i] + gen_noise_bis[1][i % len(gen_noise_bis[0])] * 0.15)
-
-        ax3.plot(sum_noise[0], sum_noise[1], "ro")
-        plt.show()
-
+        n_handler = noise_handler.NoiseHandler("Niggaria")
         for i in range(self.size):
-            new_chunk = chunk.Chunk(i, CHUNK_WIDTH, CHUNK_HEIGHT).gen(sum_noise)
+            new_chunk = chunk.Chunk(i, CHUNK_WIDTH, CHUNK_HEIGHT).gen(n_handler)
             self.chunks.append(new_chunk)
 
         blocks = {}
@@ -53,7 +38,6 @@ class World(serializable.Serializable):
                     blocks[(b.x, b.y)] = b
 
         for b_pos in blocks.keys():
-            blocks[b_pos].property = 0
             b_up = self.get_block_at((b_pos[0], b_pos[1] + 1), blocks)
             b_down = self.get_block_at((b_pos[0], b_pos[1] - 1), blocks)
             b_right = self.get_block_at((b_pos[0] + 1, b_pos[1]), blocks)
@@ -61,42 +45,7 @@ class World(serializable.Serializable):
             b_up_right = self.get_block_at((b_pos[0] + 1, b_pos[1] + 1), blocks)
             b_up_left = self.get_block_at((b_pos[0] - 1, b_pos[1] + 1), blocks)
 
-            if b_up is not None and b_up.is_solid():
-                if b_down is not None and b_down.is_solid():
-                    blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_CENTER
-                else:
-                    blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_DOWN
-
-            else:
-                if b_down is not None and b_down.is_solid():
-                    blocks[b_pos].property |= b_dirt.PROPERTY_HEIGHT_TOP
-                    blocks[b_pos].property |= b_dirt.PROPERTY_GRASS
-
-                else:
-                    blocks[b_pos].property |= b_dirt.PROPERTY_GRASS
-                    blocks[b_pos].property |= b_dirt.PROPERTY_SIMPLE
-
-            if b_right is not None and b_right.is_solid():
-                if b_left is not None and b_left.is_solid():
-                    blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_MID
-                else:
-                    blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_LEFT
-
-            else:
-                if b_left is not None and b_left.is_solid():
-                    blocks[b_pos].property |= b_dirt.PROPERTY_SIDE_RIGHT
-                else:
-                    blocks[b_pos].property |= b_dirt.PROPERTY_BOTH_SIDE
-
-            if blocks[b_pos].property & b_dirt.PROPERTY_SIDE_MID == b_dirt.PROPERTY_SIDE_MID and blocks[b_pos].property & b_dirt.PROPERTY_HEIGHT_MASK == 0:
-                if b_up_right is None or not b_up_right.is_solid():
-                    if b_up_left is None or not b_up_left.is_solid():
-                        blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_BOTH
-                    else:
-                        blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_RIGHT
-                else:
-                    if b_up_left is None or not b_up_left.is_solid():
-                        blocks[b_pos].property |= b_dirt.PROPERTY_CORNER_ADJUST_LEFT
+            blocks[b_pos].set_property(b_up, b_down, b_left, b_right, b_up_right, b_up_left)
 
         print("map width: ", (self.size * CHUNK_WIDTH))
 
@@ -135,7 +84,8 @@ class World(serializable.Serializable):
 
         elif pos in block_dlist.keys():
             return block_dlist[pos]
-        return
+
+        return b_air.Air(pos[0], pos[1])
 
     def to_bytes(self):
         pass

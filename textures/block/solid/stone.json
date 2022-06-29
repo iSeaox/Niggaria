@@ -1,9 +1,114 @@
 {
-  "type": "simple",
+  "type": "sheet/block",
   "file": "textures/block/solid/stone.png",
   "name": "block.solid.stone",
-  "format": {
-    "height": 16,
-    "width": 16
+  "sheet": {
+    "items": [
+      {
+        "property": 2147483648,
+        "x": 0,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 671088640,
+        "x": 16,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1744830464,
+        "x": 32,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1207959552,
+        "x": 48,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 134217728,
+        "x": 0,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 536870912,
+        "x": 16,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1610612736,
+        "x": 32,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1073741824,
+        "x": 48,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 268435456,
+        "x": 0,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 805306368,
+        "x": 16,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1879048192,
+        "x": 32,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1342177280,
+        "x": 48,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 939524096,
+        "x": 0,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 1476395008,
+        "x": 16,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "property": 2013265920,
+        "x": 32,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    ]
   }
 }
