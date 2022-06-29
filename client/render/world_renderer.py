@@ -29,21 +29,11 @@ def render_world(screen, world, view, texture_handler):
 def __is_visible(block, world, view, converted_pos):
     sx, sy = converted_pos
     bx, by = block.x, block.y
+    if block.is_solid():
+        if not world.solid_bitmask.is_set(bx, by):
+            print('ARGHHHH')
     if (0 - view.block_width) <= sy <= view.screen_size[1]:
         if (0 - view.block_width) <= sx <= view.screen_size[0]:
-            return True
-            # return not __is_fog(world, block)
+            return not world.fog_bitmask.is_set(bx, by)
 
-    return False
-
-
-def __is_fog(world, block):
-    bx, by = block.x, block.y
-    bitmask = world.solid_bitmask
-
-    if bitmask.is_set((bx + 1) + by * world.size * CHUNK_WIDTH):
-        if bitmask.is_set((bx - 1) + by * world.size * CHUNK_WIDTH):
-            if bitmask.is_set(bx + (by + 1) * world.size * CHUNK_WIDTH):
-                if bitmask.is_set(bx + (by - 1) * world.size * CHUNK_WIDTH):
-                    return True
     return False
