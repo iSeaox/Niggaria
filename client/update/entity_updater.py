@@ -24,11 +24,10 @@ class EntityUpdater:
 
     def update(self, world):
         timestep = self.clock.time_step()
-        self.local_player.acceleration += Vector2(0, -0.001) * (timestep / (1_000_000_000 / SERVER_TPS))
+        # self.local_player.acceleration += Vector2(0, -0.001) * (timestep / (1_000_000_000 / SERVER_TPS))
         self.local_player.velocity += self.local_player.acceleration
         self.local_player.acceleration = Vector2(0, 0)
         self.local_player.position += self.local_player.velocity * (timestep / (1_000_000_000 / SERVER_TPS))
-        # La division par 4 est arbitraire, son but est de rendre une acceleration de 1 un vitesse apparente raisonnable.
 
         self.local_player.position.x %= world.size * CHUNK_WIDTH
 
@@ -76,7 +75,8 @@ class EntityUpdater:
     def push_local_action(self, action):
         if action.type == "entity_move_action":
             if action.timestamp == self.last_timestamp:
-                # print(f'SELF : {action.entity.position.x} {action.entity.position.y}')
+                print(f'SELF : {self.local_player.position.x} {self.local_player.position.y}')
+                print(f'ACTUAL : {action.entity.position.x} {action.entity.position.y}')
                 self.local_player.position = action.entity.position
         else:
             if action.type == "key_action":

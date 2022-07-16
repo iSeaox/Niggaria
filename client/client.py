@@ -121,7 +121,6 @@ class Client:
                 if new_action:
                     self.__entity_updater.push_local_action(new_action)
                     raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__entity_updater.last_timestamp = self.__clock.get_time()
                     self.send_udp_packet(str.encode(raw_packet))
             elif event.type == pygame.KEYUP:
                 new_action = None
@@ -133,9 +132,10 @@ class Client:
                     new_action = key_action.KeyAction(key_action.KEY_JUMP, key_action.ACTION_UP)
                 if new_action:
                     self.__entity_updater.push_local_action(new_action)
-                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-                    self.__entity_updater.last_timestamp = self.__clock.get_time()
-                    self.send_udp_packet(str.encode(raw_packet))
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile)
+                    serialized_raw_packet = raw_packet.serialize()
+                    self.__entity_updater.last_timestamp = raw_packet.timestamp
+                    self.send_udp_packet(str.encode(serialized_raw_packet))
 
         if self.debug_map_gen:
             speed = 2
