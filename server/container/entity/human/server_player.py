@@ -1,9 +1,11 @@
+from copy import copy
 from pygame import Vector2
 
 import action.client.key_action as key_action
 import action.server.entity_move_action as entity_move_action
 import server.packet.action_transfert_packet as action_transfert_packet
 import utils.clock as clock
+import utils.sized_list as sized_list
 
 
 class ServerPlayer:
@@ -19,6 +21,8 @@ class ServerPlayer:
 
         self.gravity = [False, Vector2(0, -0.001)]
 
+        self.past = sized_list.PastBuffer(15)
+
     def last_pos(self, timestep, velocity):
         return velocity * (timestep / (1_000_000_000 / self.__server_tps))
 
@@ -30,6 +34,9 @@ class ServerPlayer:
             if action['action'] == key_action.ACTION_DOWN:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(1, 0)
+                    snapshot = self.past.find_closest_timestamp(data['timestamp'])
+                    print(snapshot)
+
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(-1, 0)
                 elif action['key'] == key_action.KEY_JUMP:
@@ -63,7 +70,8 @@ class ServerPlayer:
             self.player.acceleration += self.gravity[1] * (timestep / (1_000_000_000 / self.__server_tps))
 
         self.player.velocity += self.player.acceleration
-        self.player.acceleration = Vector2(0, 0)
         self.player.position += self.last_pos(timestep, self.player.velocity)
+        self.past.append({'timestamp': self.clock.get_time(), 'position': copy(self.player.position), 'acceleration': copy(self.player.acceleration)})
+        self.player.acceleration = Vector2(0, 0)
 
         self.player.position.x %= world_size
