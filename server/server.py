@@ -116,6 +116,18 @@ class Server:
                 concerned_server_player = self.get_server_player_by_uuid(packet["profile"]["uuid"])
                 self.quit_player(concerned_server_player)
 
+        # -------------------------- Update players and send player position to all players -----------------------
+        for concerned_player in self.__connected_players:
+            concerned_player.update_player(self.server_world.size * world.CHUNK_WIDTH)
+
+            for other_player in self.__connected_players:
+                if concerned_player.profile.uuid != other_player.profile.uuid:
+                    em_action = entity_move_action.EntityMoveAction(other_player.player)
+                    em_action.timestamp = self.__clock.get_time()
+                    raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
+
+                    self.send_udp_packet(concerned_player, str.encode(raw_packet))
+
         # -------------------------- UDP Treatment -----------------------
         packets = net_preprocessor.gen_packet_list(self.udp_queue)
         for packet in packets:
@@ -129,19 +141,7 @@ class Server:
                     if concerned_player.profile.uuid == data['uuid']:
                         em_packets = concerned_player.update_player_action(data)
                         for em_packet in em_packets:
-                            self.send_udp_packet(concerned_player, str.encode(em_packet))
-
-        # -------------------------- Update players and send player position to all players -----------------------
-        for concerned_player in self.__connected_players:
-            concerned_player.update_player(self.server_world.size * world.CHUNK_WIDTH)
-
-            for other_player in self.__connected_players:
-                if concerned_player.profile.uuid != other_player.profile.uuid:
-                    em_action = entity_move_action.EntityMoveAction(other_player.player)
-                    em_action.timestamp = self.__clock.get_time()
-                    raw_packet = action_transfert_packet.ActionTransfertPacket(em_action).serialize()
-
-                    self.send_udp_packet(concerned_player, str.encode(raw_packet))
+                            self.send_udp_packet(concerned_player, str.encode(em_packet))        
 
     def send_udp_packet(self, server_player, packet):
         if server_player.udp_access:

@@ -1,3 +1,4 @@
+from copy import copy
 from pygame import Vector2
 
 import action.client.key_action as key_action
@@ -30,25 +31,28 @@ class ServerPlayer:
             if action['action'] == key_action.ACTION_DOWN:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(1, 0)
-                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-self.player.velocity.x, self.player.velocity.y + self.last_pos(self.clock.get_time() - data['timestamp'], - self.gravity[1]).y) + (self.player.velocity + Vector2(1, 0)))
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(1, 0))
+
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(-1, 0)
-                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-self.player.velocity.x, self.player.velocity.y + self.last_pos(self.clock.get_time() - data['timestamp'], - self.gravity[1]).y) + (self.player.velocity + Vector2(-1, 0)))
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-1, 0))
+
                 elif action['key'] == key_action.KEY_JUMP:
-                    self.player.acceleration += Vector2(0, 0.01)
-                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-self.player.velocity.x, self.player.velocity.y + self.last_pos(self.clock.get_time() - data['timestamp'], - self.gravity[1]).y) + (self.player.velocity + Vector2(0, 0.01)))
+                    self.player.acceleration += Vector2(0, 0.05)
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(0, 0.05))
 
             elif action['action'] == key_action.ACTION_UP:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(-1, 0)
-                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-self.player.velocity.x, self.player.velocity.y + self.last_pos(self.clock.get_time() - data['timestamp'], - self.gravity[1]).y) + (self.player.velocity + Vector2(-1, 0)))
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-1, 0))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]
                     em_packets.append(action_transfert_packet.ActionTransfertPacket(em_action, True).serialize())
+
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(1, 0)
-                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-self.player.velocity.x, self.player.velocity.y + self.last_pos(self.clock.get_time() - data['timestamp'], - self.gravity[1]).y) + (self.player.velocity + Vector2(1, 0)))
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(1, 0))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]
@@ -63,7 +67,7 @@ class ServerPlayer:
     def update_player(self, world_size):
         timestep = self.clock.time_step()
 
-        if self.gravity[0]:
+        if self.gravity[0] and False:
             self.player.acceleration += self.gravity[1] * (timestep / (1_000_000_000 / self.__server_tps))
 
         self.player.velocity += self.player.acceleration

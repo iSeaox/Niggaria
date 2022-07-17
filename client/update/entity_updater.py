@@ -28,7 +28,6 @@ class EntityUpdater:
         self.local_player.velocity += self.local_player.acceleration
         self.local_player.acceleration = Vector2(0, 0)
         self.local_player.position += self.local_player.velocity * (timestep / (1_000_000_000 / SERVER_TPS))
-        # La division par 4 est arbitraire, son but est de rendre une acceleration de 1 un vitesse apparente raisonnable.
 
         self.local_player.position.x %= world.size * CHUNK_WIDTH
 
@@ -76,7 +75,9 @@ class EntityUpdater:
     def push_local_action(self, action):
         if action.type == "entity_move_action":
             if action.timestamp == self.last_timestamp:
-                # print(f'SELF : {action.entity.position.x} {action.entity.position.y}')
+                delta_x, delta_y = self.local_player.position.x - action.entity.position.x, self.local_player.position.y - action.entity.position.y
+                if delta_x > 1 or delta_y > 1:
+                    print(f'IMPORTANT DELTA : {delta_x, delta_y}')
                 self.local_player.position = action.entity.position
         else:
             if action.type == "key_action":
@@ -86,7 +87,7 @@ class EntityUpdater:
                     elif action.key == key_action.KEY_LEFT:
                         self.local_player.acceleration += Vector2(-1, 0)
                     elif action.key == key_action.KEY_JUMP:
-                        self.local_player.acceleration += Vector2(0, 0.01)
+                        self.local_player.acceleration += Vector2(0, 0.05)
                 elif action.action == key_action.ACTION_UP:
                     if action.key == key_action.KEY_RIGHT:
                         self.local_player.acceleration += Vector2(-1, 0)
@@ -97,4 +98,3 @@ class EntityUpdater:
         if not(entity.instance_uid in self.buffers.keys()):
             self.buffers[entity.instance_uid] = []
         self.buffers[entity.instance_uid].append((self.clock.get_time(), action))
-        # print(f'OTHER : {action.entity.position.x} SELF : {self.local_player.position.x}')
