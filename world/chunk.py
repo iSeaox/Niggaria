@@ -18,6 +18,7 @@ class Chunk(serializable.Serializable):
         self.chunk_width = chunk_width
         self.chunk_height = chunk_height
         self.number_of_chunks = number_of_chunks
+        self.number_of_chunks = 32 if self.number_of_chunks < 32 else self.number_of_chunks
         self.chunk_x = chunk_x
         if self.chunk_x is not None:
             self.x = self.chunk_x * self.chunk_width

@@ -23,6 +23,10 @@ class ServerPlayer:
     def last_pos(self, timestep, velocity):
         return velocity * (timestep / (1_000_000_000 / self.__server_tps))
 
+    def activate_gravity(self):
+        self.clock.time = self.clock.get_time()
+        self.gravity[0] = True
+
     def update_player_action(self, data):
         em_packets = []
         action = data['action']
@@ -58,16 +62,12 @@ class ServerPlayer:
                     em_action.timestamp = data["timestamp"]
                     em_packets.append(action_transfert_packet.ActionTransfertPacket(em_action, True).serialize())
 
-            elif (action['action'], action['key']) == (-1, -1):
-                self.clock.time = self.clock.get_time()
-                self.gravity[0] = True
-
         return em_packets
 
     def update_player(self, world_size):
         timestep = self.clock.time_step()
 
-        if self.gravity[0] and False:
+        if self.gravity[0]:
             self.player.acceleration += self.gravity[1] * (timestep / (1_000_000_000 / self.__server_tps))
 
         self.player.velocity += self.player.acceleration

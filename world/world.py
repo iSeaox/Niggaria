@@ -18,7 +18,7 @@ CHUNK_HEIGHT = 512
 
 class World(serializable.Serializable):
 
-    def __init__(self, size=64):
+    def __init__(self, size=8):
         self.entities = {}
         self.solid_bitmask = None
         self.size = size  # en nombre de chunk
@@ -31,7 +31,7 @@ class World(serializable.Serializable):
     def gen(self):
         n_handler = noise_handler.NoiseHandler("Niggaria")
         for i in range(self.size):
-            new_chunk = chunk.Chunk(i, CHUNK_WIDTH, CHUNK_HEIGHT).gen(n_handler)
+            new_chunk = chunk.Chunk(i, CHUNK_WIDTH, CHUNK_HEIGHT, number_of_chunks=self.size).gen(n_handler)
             self.chunks.append(new_chunk)
 
         blocks = {}
