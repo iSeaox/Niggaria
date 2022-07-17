@@ -24,14 +24,14 @@ class NoiseHandler:
         self.__permutation_table = [i for i in range(PERMUTATION_TABLE_SIZE)]
         self.reset()
 
-    def __get_gradient_2D(self, point):
-        return GRADIENT_TABLE_2D[self.__permutation_table[(int(point.x) + self.__permutation_table[int(point.y) % PERMUTATION_TABLE_SIZE]) % PERMUTATION_TABLE_SIZE] % len(GRADIENT_TABLE_2D)]
+    def __get_gradient_2D(self, point, length_mod):
+        return GRADIENT_TABLE_2D[self.__permutation_table[(int(point.x) + self.__permutation_table[int(point.y) % length_mod % PERMUTATION_TABLE_SIZE]) % length_mod % PERMUTATION_TABLE_SIZE] % len(GRADIENT_TABLE_2D)]
 
     def __get_gradient_1D(self, x):
         return GRADIENT_TABLE_1D[self.__permutation_table[x % PERMUTATION_TABLE_SIZE] % len(GRADIENT_TABLE_1D)]
 
-    def get_1D_noise(self, x, res, lenght_mod=2048):
-        lenght_mod = int(lenght_mod / res)
+    def get_1D_noise(self, x, res, length_mod=2048):
+        length_mod = int(length_mod / res)
         x /= res
         p0 = math.floor(x)
         p1 = p0 + 1
@@ -39,12 +39,13 @@ class NoiseHandler:
         t = x - p0
         fade_t = interpolation_function(t)
 
-        v_g0 = self.__get_gradient_1D(p0 % lenght_mod)
-        v_g1 = self.__get_gradient_1D(p1 % lenght_mod)
+        v_g0 = self.__get_gradient_1D(p0 % length_mod)
+        v_g1 = self.__get_gradient_1D(p1 % length_mod)
 
         return (1 - fade_t) * v_g0 * (x - p0) + fade_t * v_g1 * (x - p1)
 
-    def get_2D_noise(self, point, res):
+    def get_2D_noise(self, point, res, length_mod=2048):
+        length_mod = int(length_mod / res)
         x, y = point.xy
         x /= res
         y /= res
@@ -54,10 +55,10 @@ class NoiseHandler:
         p2 = Vector2(p0.x, p0.y + 1)
         p3 = Vector2(p0.x + 1, p0.y + 1)
 
-        v_g0 = self.__get_gradient_2D(p0)
-        v_g1 = self.__get_gradient_2D(p1)
-        v_g2 = self.__get_gradient_2D(p2)
-        v_g3 = self.__get_gradient_2D(p3)
+        v_g0 = self.__get_gradient_2D(p0, length_mod)
+        v_g1 = self.__get_gradient_2D(p1, length_mod)
+        v_g2 = self.__get_gradient_2D(p2, length_mod)
+        v_g3 = self.__get_gradient_2D(p3, length_mod)
 
         t0 = x - p0.x
         fade_t0 = interpolation_function(t0)

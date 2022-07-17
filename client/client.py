@@ -84,7 +84,7 @@ class Client:
 
         self.texture_handler.load_textures(part="gui")
         self.__launcher.start(screen)
-        self.view = view_handler.View((0, 17), self.__player, screen.get_size(), 1, self.__world.size)
+        self.view = view_handler.View((0, 250), self.__player, screen.get_size(), 1, self.__world.size)
         self.init_udp()
         self.udp_listener.start()
 

@@ -13,7 +13,7 @@ import utils.file_utils as file_utils
 import utils.bit_mask as bit_mask
 
 CHUNK_WIDTH = 32
-CHUNK_HEIGHT = 256
+CHUNK_HEIGHT = 512
 
 
 class World(serializable.Serializable):

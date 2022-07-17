@@ -33,7 +33,6 @@ class Stone(block.Block):
         if b_up.type == self.type:
             if b_down.type == self.type:
                 self.property |= PROPERTY_HEIGHT_CENTER
-                simple_pass += 1
             else:
                 self.property |= PROPERTY_HEIGHT_DOWN
         else:
@@ -41,6 +40,7 @@ class Stone(block.Block):
                 self.property |= PROPERTY_HEIGHT_TOP
             else:
                 self.property |= PROPERTY_BOTH_HEIGHT
+                simple_pass += 1
 
         if b_left.type == self.type:
             if b_right.type == self.type:
