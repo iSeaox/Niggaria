@@ -90,10 +90,6 @@ class Client:
 
         self.__entity_updater.clock.time = self.__clock.get_time()
 
-        new_action = key_action.KeyAction(-1, -1)
-        raw_packet = action_transfert_packet.ActionTransfertPacket(new_action, self.profile).serialize()
-        self.send_udp_packet(str.encode(raw_packet))
-
         while self.__run:
             self.__clock.start_tick()
 

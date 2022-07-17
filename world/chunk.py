@@ -1,5 +1,6 @@
 import struct
 import random
+from numpy import number
 
 from pygame.math import Vector2
 
@@ -13,9 +14,11 @@ import block.decoration.plant as b_plant
 
 class Chunk(serializable.Serializable):
 
-    def __init__(self, chunk_x=None, chunk_width=32, chunk_height=256):
+    def __init__(self, chunk_x=None, chunk_width=32, chunk_height=256, number_of_chunks=64):
         self.chunk_width = chunk_width
         self.chunk_height = chunk_height
+        self.number_of_chunks = number_of_chunks
+        self.number_of_chunks = 32 if self.number_of_chunks < 32 else self.number_of_chunks
         self.chunk_x = chunk_x
         if self.chunk_x is not None:
             self.x = self.chunk_x * self.chunk_width
@@ -30,12 +33,12 @@ class Chunk(serializable.Serializable):
         for i in range(self.chunk_width):
             x = i + self.chunk_width * self.chunk_x
 
-            value = noise_handler.get_1D_noise(x, res=1024)
-            value += noise_handler.get_1D_noise(x, res=512) * 0.5
-            value += noise_handler.get_1D_noise(x, res=256) * 0.25
-            value += noise_handler.get_1D_noise(x, res=128) * 0.125
-            value += noise_handler.get_1D_noise(x, res=64) * 0.125
-            value += noise_handler.get_1D_noise(x, res=32) * 0.025
+            value = noise_handler.get_1D_noise(x, res=1024, length_mod=self.number_of_chunks * self.chunk_width)
+            value += noise_handler.get_1D_noise(x, res=512, length_mod=self.number_of_chunks * self.chunk_width) * 0.5
+            value += noise_handler.get_1D_noise(x, res=256, length_mod=self.number_of_chunks * self.chunk_width) * 0.25
+            value += noise_handler.get_1D_noise(x, res=128, length_mod=self.number_of_chunks * self.chunk_width) * 0.125
+            value += noise_handler.get_1D_noise(x, res=64, length_mod=self.number_of_chunks * self.chunk_width) * 0.125
+            value += noise_handler.get_1D_noise(x, res=32, length_mod=self.number_of_chunks * self.chunk_width) * 0.025
             y = round(256 + value * self.chunk_height)
 
             # plant_value = abs(noise[1][(x * 10) % len(noise[1])])
@@ -43,10 +46,10 @@ class Chunk(serializable.Serializable):
             #     self.blocks[self.__get_index(x, y + 1)] = b_plant.Plant(x, y + 1, variant=random.randint(0, 5))
             for offset in range(depth):
                 if y - offset >= 0:
-                    value = noise_handler.get_2D_noise(Vector2(x, y - offset), res=256)
-                    value += noise_handler.get_2D_noise(Vector2(x, y - offset), res=128) * 0.7
-                    value += noise_handler.get_2D_noise(Vector2(x, y - offset), res=64) * 0.6
-                    value += noise_handler.get_2D_noise(Vector2(x, y - offset), res=32) * 0.5
+                    value = noise_handler.get_2D_noise(Vector2(x, y - offset), res=256, length_mod=self.number_of_chunks * self.chunk_width)
+                    value += noise_handler.get_2D_noise(Vector2(x, y - offset), res=128, length_mod=self.number_of_chunks * self.chunk_width) * 0.7
+                    value += noise_handler.get_2D_noise(Vector2(x, y - offset), res=64, length_mod=self.number_of_chunks * self.chunk_width) * 0.6
+                    value += noise_handler.get_2D_noise(Vector2(x, y - offset), res=32, length_mod=self.number_of_chunks * self.chunk_width) * 0.5
                     value = (value + 0.3) * 0.5
 
                     if value < 0.28:

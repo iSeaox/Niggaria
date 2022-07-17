@@ -135,6 +135,9 @@ class Server:
 
             if data["type"] == "sudpc_packet":
                 self.get_server_player_by_uuid(data["uuid"]).udp_access = packet[1]
+                for concerned_player in self.__connected_players:
+                    if concerned_player.profile.uuid == data['uuid']:
+                        concerned_player.activate_gravity()
 
             if data["type"] == "action_transfert_packet":
                 for concerned_player in self.__connected_players:
