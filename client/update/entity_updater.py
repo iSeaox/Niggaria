@@ -87,7 +87,7 @@ class EntityUpdater:
                     elif action.key == key_action.KEY_LEFT:
                         self.local_player.acceleration += Vector2(-1, 0)
                     elif action.key == key_action.KEY_JUMP:
-                        self.local_player.acceleration += Vector2(0, 0.01)
+                        self.local_player.acceleration += Vector2(0, 0.05)
                 elif action.action == key_action.ACTION_UP:
                     if action.key == key_action.KEY_RIGHT:
                         self.local_player.acceleration += Vector2(-1, 0)
@@ -98,4 +98,3 @@ class EntityUpdater:
         if not(entity.instance_uid in self.buffers.keys()):
             self.buffers[entity.instance_uid] = []
         self.buffers[entity.instance_uid].append((self.clock.get_time(), action))
-        # print(f'OTHER : {action.entity.position.x} SELF : {self.local_player.position.x}')
