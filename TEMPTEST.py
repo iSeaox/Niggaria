@@ -102,7 +102,8 @@ for chunk in range(64):
         value += n_handler_height.get_1D_noise(x, res=64) * 0.125
         value += n_handler_height.get_1D_noise(x, res=32) * 0.025
         h_chunk_y.append(256 + value * 512)
-        t_chunk_y.append((1 - value) * 26)
+        # t_chunk_y.append((1 - value) * 26)
+        t_chunk_y.append(1 + value)
 
         m_chunk_x.append(x)
         value = n_handler_moisture.get_1D_noise(x, res=1024)
@@ -111,7 +112,7 @@ for chunk in range(64):
         value += n_handler_moisture.get_1D_noise(x, res=128) * 0.125
         value += n_handler_moisture.get_1D_noise(x, res=64) * 0.125
         value += n_handler_moisture.get_1D_noise(x, res=32) * 0.025
-        m_chunk_y.append(value)
+        m_chunk_y.append(1 + value)
 
     h_axis_x += m_chunk_x
     h_axis_y += h_chunk_y

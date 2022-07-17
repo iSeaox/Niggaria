@@ -29,9 +29,11 @@ class World(serializable.Serializable):
         self.fog_bitmask = None
 
     def gen(self):
-        n_handler = noise_handler.NoiseHandler("Niggaria")
+        height_n_handler = noise_handler.NoiseHandler("Niggaria")
+        moisture_n_handler = noise_handler.NoiseHandler("moisture-Niggaria")
+
         for i in range(self.size):
-            new_chunk = chunk.Chunk(i, CHUNK_WIDTH, CHUNK_HEIGHT, number_of_chunks=self.size).gen(n_handler)
+            new_chunk = chunk.Chunk(i, CHUNK_WIDTH, CHUNK_HEIGHT, number_of_chunks=self.size).gen(height_n_handler, moisture_n_handler)
             self.chunks.append(new_chunk)
 
         blocks = {}
