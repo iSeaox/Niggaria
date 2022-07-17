@@ -67,7 +67,7 @@ class Chunk(serializable.Serializable):
         temperature_map = []
 
         for value in noise_map:
-            height_map.append(round(256 + value * self.chunk_height))
+            height_map.append(round(256 + value * 200))
             temperature_map.append(1 + value)
 
         biome = biome_type.get_chunk_biome(moisture_map, temperature_map, height_map)
