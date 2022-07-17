@@ -1,3 +1,5 @@
+import time
+
 import action.client.key_action as key_action
 
 from pygame import Vector2
@@ -22,7 +24,7 @@ class EntityUpdater:
 
     def update(self, world):
         timestep = self.clock.time_step()
-        # self.local_player.acceleration += Vector2(0, -0.001) * (timestep / (1_000_000_000 / SERVER_TPS))
+        self.local_player.acceleration += Vector2(0, -0.001) * (timestep / (1_000_000_000 / SERVER_TPS))
         self.local_player.velocity += self.local_player.acceleration
         self.local_player.acceleration = Vector2(0, 0)
         self.local_player.position += self.local_player.velocity * (timestep / (1_000_000_000 / SERVER_TPS))
@@ -73,8 +75,9 @@ class EntityUpdater:
     def push_local_action(self, action):
         if action.type == "entity_move_action":
             if action.timestamp == self.last_timestamp:
-                print(f'SELF : {self.local_player.position.x} {self.local_player.position.y}')
-                print(f'ACTUAL : {action.entity.position.x} {action.entity.position.y}')
+                delta_x, delta_y = self.local_player.position.x - action.entity.position.x, self.local_player.position.y - action.entity.position.y
+                if delta_x > 1 or delta_y > 1:
+                    print(f'IMPORTANT DELTA : {delta_x, delta_y}')
                 self.local_player.position = action.entity.position
         else:
             if action.type == "key_action":

@@ -1,12 +1,10 @@
 from copy import copy
-from turtle import pos
 from pygame import Vector2
 
 import action.client.key_action as key_action
 import action.server.entity_move_action as entity_move_action
 import server.packet.action_transfert_packet as action_transfert_packet
 import utils.clock as clock
-import utils.sized_list as sized_list
 
 
 class ServerPlayer:
@@ -22,21 +20,8 @@ class ServerPlayer:
 
         self.gravity = [False, Vector2(0, -0.001)]
 
-        self.past = sized_list.PastBuffer(15)
-
     def last_pos(self, timestep, velocity):
         return velocity * (timestep / (1_000_000_000 / self.__server_tps))
-    
-    def simulate_snapshots(self, snapshots, acceleration):
-        position = snapshots[0]['position']
-        velocity = snapshots[0]['velocity'] + acceleration
-        last_timestamp = snapshots[0]['timestamp']
-        
-        for snapshot in snapshots[1:]:
-            acceleration = velocity - snapshot['velocity']
-            position += self.last_pos(snapshot['timestamp'] - last_timestamp, velocity + acceleration)
-        
-        return position
 
     def update_player_action(self, data):
         em_packets = []
@@ -46,32 +31,20 @@ class ServerPlayer:
             if action['action'] == key_action.ACTION_DOWN:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(1, 0)
-                    snapshots = self.past.find_timestamps(data['timestamp'])
-
-                    print(f'STARTING POSITION : {self.player.position}')
-                    self.player.position = self.simulate_snapshots(snapshots, Vector2(1, 0))
-                    print(f'FIXED POSITION : {self.player.position}')
-                    print(f"CALCULATED DELTA : {self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(1, 0))}")
-                    print(f"CALCULATED DELTA FROM SNAPSHOTS : {self.last_pos(self.clock.get_time() - snapshots[0]['timestamp'], Vector2(1, 0))}")
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(1, 0))
 
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(-1, 0)
-                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(-1, 0))
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-1, 0))
 
                 elif action['key'] == key_action.KEY_JUMP:
                     self.player.acceleration += Vector2(0, 0.01)
-                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(0, 0.01))
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(0, 0.01))
 
             elif action['action'] == key_action.ACTION_UP:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(-1, 0)
-                    snapshots = self.past.find_timestamps(data['timestamp'])
-                    
-                    print(f'END POSITION : {self.player.position}')
-                    self.player.position = self.simulate_snapshots(snapshots, Vector2(-1, 0))
-                    print(f'FIXED END POSITION : {self.player.position}')
-                    print(f"CALCULATED END DELTA : {self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-1, 0))}")
-                    print(f"CALCULATED END DELTA FROM SNAPSHOTS : {self.last_pos(self.clock.get_time() - snapshots[0]['timestamp'], Vector2(-1, 0))}")
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-1, 0))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]
@@ -79,7 +52,7 @@ class ServerPlayer:
 
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(1, 0)
-                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(1, 0))
+                    self.player.position += self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(1, 0))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]
@@ -94,12 +67,11 @@ class ServerPlayer:
     def update_player(self, world_size):
         timestep = self.clock.time_step()
 
-        if self.gravity[0] and False:
+        if self.gravity[0]:
             self.player.acceleration += self.gravity[1] * (timestep / (1_000_000_000 / self.__server_tps))
 
         self.player.velocity += self.player.acceleration
         self.player.acceleration = Vector2(0, 0)
         self.player.position += self.last_pos(timestep, self.player.velocity)
-        self.past.append({'timestamp': self.clock.get_time(), 'position': copy(self.player.position), 'velocity': copy(self.player.velocity)})
 
         self.player.position.x %= world_size
