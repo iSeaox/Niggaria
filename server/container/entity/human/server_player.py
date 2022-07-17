@@ -46,7 +46,13 @@ class ServerPlayer:
             if action['action'] == key_action.ACTION_DOWN:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(1, 0)
-                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(1, 0))  
+                    snapshots = self.past.find_timestamps(data['timestamp'])
+
+                    print(f'STARTING POSITION : {self.player.position}')
+                    self.player.position = self.simulate_snapshots(snapshots, Vector2(1, 0))
+                    print(f'FIXED POSITION : {self.player.position}')
+                    print(f"CALCULATED DELTA : {self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(1, 0))}")
+                    print(f"CALCULATED DELTA FROM SNAPSHOTS : {self.last_pos(self.clock.get_time() - snapshots[0]['timestamp'], Vector2(1, 0))}")
 
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(-1, 0)
@@ -59,7 +65,13 @@ class ServerPlayer:
             elif action['action'] == key_action.ACTION_UP:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(-1, 0)
-                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(-1, 0))
+                    snapshots = self.past.find_timestamps(data['timestamp'])
+                    
+                    print(f'END POSITION : {self.player.position}')
+                    self.player.position = self.simulate_snapshots(snapshots, Vector2(-1, 0))
+                    print(f'FIXED END POSITION : {self.player.position}')
+                    print(f"CALCULATED END DELTA : {self.last_pos(self.clock.get_time() - data['timestamp'], Vector2(-1, 0))}")
+                    print(f"CALCULATED END DELTA FROM SNAPSHOTS : {self.last_pos(self.clock.get_time() - snapshots[0]['timestamp'], Vector2(-1, 0))}")
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]

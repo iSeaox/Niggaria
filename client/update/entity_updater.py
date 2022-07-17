@@ -1,5 +1,3 @@
-import time
-
 import action.client.key_action as key_action
 
 from pygame import Vector2
