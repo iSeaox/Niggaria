@@ -12,7 +12,6 @@ from pygame.math import Vector2
 
 dtest = {}
 
-
 # def get_gradient(p, gt, pt):
 #     return gt[pt[(p[0] + pt[p[1] % len(pt)]) % len(pt)] % len(gt)]
 #
@@ -73,25 +72,59 @@ dtest = {}
 # unit = 1 / math.sqrt(2)
 # gradient_table_2D = ((unit, unit), (-unit, unit), (unit, -unit), (-unit, -unit), (1, 0), (-1, 0), (0, 1), (0, -1))
 # gradient_table_1D = (-1, 1)
-n_handler = noise_handler.NoiseHandler("Niggaria")
+n_handler_height = noise_handler.NoiseHandler("Niggaria")
+n_handler_moisture = noise_handler.NoiseHandler("moisture-Niggaria")
 # ----------------------------------------
-axis_x = []
-axis_y = []
-size = 4096
-for i in range(size):
-    axis_x.append(i)
-    value = n_handler.get_1D_noise(i, res=1024, lenght_mod=size)
-    value += n_handler.get_1D_noise(i, res=512, lenght_mod=size) * 0.5
-    value += n_handler.get_1D_noise(i, res=256, lenght_mod=size) * 0.25
-    value += n_handler.get_1D_noise(i, res=128, lenght_mod=size) * 0.125
-    value += n_handler.get_1D_noise(i, res=64, lenght_mod=size) * 0.125
-    value += n_handler.get_1D_noise(i, res=32, lenght_mod=size) * 0.025
-    axis_y.append(value)
+h_axis_x = []
+h_axis_y = []
 
-    if i == 0 or i == 2048:
-        print(value)
+t_axis_x = []
+t_axis_y = []
 
-plt.plot(axis_x, axis_y)
+m_axis_x = []
+m_axis_y = []
+for chunk in range(64):
+    h_chunk_y = []
+
+    t_chunk_x = []
+    t_chunk_y = []
+
+    m_chunk_x = []
+    m_chunk_y = []
+
+    for i in range(32):
+        x = chunk * 32 + i
+        t_chunk_x.append(x)
+        value = n_handler_height.get_1D_noise(x, res=1024)
+        value += n_handler_height.get_1D_noise(x, res=512) * 0.5
+        value += n_handler_height.get_1D_noise(x, res=256) * 0.25
+        value += n_handler_height.get_1D_noise(x, res=128) * 0.125
+        value += n_handler_height.get_1D_noise(x, res=64) * 0.125
+        value += n_handler_height.get_1D_noise(x, res=32) * 0.025
+        h_chunk_y.append(256 + value * 512)
+        t_chunk_y.append((1 - value) * 26)
+
+        m_chunk_x.append(x)
+        value = n_handler_moisture.get_1D_noise(x, res=1024)
+        value += n_handler_moisture.get_1D_noise(x, res=512) * 0.5
+        value += n_handler_moisture.get_1D_noise(x, res=256) * 0.25
+        value += n_handler_moisture.get_1D_noise(x, res=128) * 0.125
+        value += n_handler_moisture.get_1D_noise(x, res=64) * 0.125
+        value += n_handler_moisture.get_1D_noise(x, res=32) * 0.025
+        m_chunk_y.append(value)
+
+    h_axis_x += m_chunk_x
+    h_axis_y += h_chunk_y
+
+    t_axis_x += t_chunk_x
+    t_axis_y += t_chunk_y
+
+    m_axis_x += m_chunk_x
+    m_axis_y += m_chunk_y
+
+# plt.plot(h_axis_x, h_axis_y)
+plt.plot(t_axis_x, t_axis_y)
+plt.plot(m_axis_x, m_axis_y)
 plt.show()
 # ----------------------------------------
 
@@ -117,4 +150,3 @@ plt.show()
 #
 # print(min, max)
 # img.show()
-

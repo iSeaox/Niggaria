@@ -13,11 +13,16 @@ def render_world(screen, world, view, texture_handler):
         displayed_chunk.append(world.get_chunk(i))
 
     for chunk in displayed_chunk:
+
+        view_height = screen.get_height() // view.block_width
+        # chunk.get_blocks_btw(view.pos[1] - view_height - 3, view.pos[1] + 3)
+        ind = 0
         for block in chunk.blocks:
             if block != 0 and __is_visible(block, world, view, view.convert_position((block.x, block.y))):
                 screen.blit(
                     texture_handler.get_texture(block.__module__ + ":" + str(block.property), variant=block.variant),
                     view.convert_position((block.x, block.y)))
+            ind += 1
 
     # RENDER OF ENTITIES
     for entity in world.entities.values():
@@ -29,11 +34,12 @@ def render_world(screen, world, view, texture_handler):
 def __is_visible(block, world, view, converted_pos):
     sx, sy = converted_pos
     bx, by = block.x, block.y
-    if block.is_solid():
-        if not world.solid_bitmask.is_set(bx, by):
-            print('ARGHHHH')
+    # if block.is_solid():
+    #     if not world.solid_bitmask.is_set(bx, by):
+    #         print('ARGHHHH')
     if (0 - view.block_width) <= sy <= view.screen_size[1]:
         if (0 - view.block_width) <= sx <= view.screen_size[0]:
-            return not world.fog_bitmask.is_set(bx, by)
+            return True
+            # return not world.fog_bitmask.is_set(bx, by)
 
     return False
