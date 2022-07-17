@@ -1,4 +1,5 @@
 from copy import copy
+from turtle import pos
 from pygame import Vector2
 
 import action.client.key_action as key_action
@@ -25,6 +26,17 @@ class ServerPlayer:
 
     def last_pos(self, timestep, velocity):
         return velocity * (timestep / (1_000_000_000 / self.__server_tps))
+    
+    def simulate_snapshots(self, snapshots, acceleration):
+        position = snapshots[0]['position']
+        velocity = snapshots[0]['velocity'] + acceleration
+        last_timestamp = snapshots[0]['timestamp']
+        
+        for snapshot in snapshots[1:]:
+            acceleration = velocity - snapshot['velocity']
+            position += self.last_pos(snapshot['timestamp'] - last_timestamp, velocity + acceleration)
+        
+        print(f'PREDICTED : {position}, ACTUAL : {self.player.position}')
 
     def update_player_action(self, data):
         em_packets = []
@@ -34,8 +46,7 @@ class ServerPlayer:
             if action['action'] == key_action.ACTION_DOWN:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(1, 0)
-                    snapshot = self.past.find_closest_timestamp(data['timestamp'])
-                    print(snapshot)
+                    self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(1, 0))   
 
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(-1, 0)
@@ -70,8 +81,8 @@ class ServerPlayer:
             self.player.acceleration += self.gravity[1] * (timestep / (1_000_000_000 / self.__server_tps))
 
         self.player.velocity += self.player.acceleration
-        self.player.position += self.last_pos(timestep, self.player.velocity)
-        self.past.append({'timestamp': self.clock.get_time(), 'position': copy(self.player.position), 'acceleration': copy(self.player.acceleration)})
         self.player.acceleration = Vector2(0, 0)
+        self.player.position += self.last_pos(timestep, self.player.velocity)
+        self.past.append({'timestamp': self.clock.get_time(), 'position': copy(self.player.position), 'velocity': copy(self.player.velocity)})
 
         self.player.position.x %= world_size
