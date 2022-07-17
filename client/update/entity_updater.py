@@ -24,7 +24,7 @@ class EntityUpdater:
 
     def update(self, world):
         timestep = self.clock.time_step()
-        # self.local_player.acceleration += Vector2(0, -0.001) * (timestep / (1_000_000_000 / SERVER_TPS))
+        self.local_player.acceleration += Vector2(0, -0.001) * (timestep / (1_000_000_000 / SERVER_TPS))
         self.local_player.velocity += self.local_player.acceleration
         self.local_player.acceleration = Vector2(0, 0)
         self.local_player.position += self.local_player.velocity * (timestep / (1_000_000_000 / SERVER_TPS))
@@ -40,6 +40,7 @@ class EntityUpdater:
                     interpolate_timestamp = time.time_ns() - TPS_TIME
                     working_buffer = self.buffers[entity_uid]
                     delta_x_max = 10  # pour ne pas faire d'interpolation pendant les téléportations entre autre
+                    delta_y_max = 30
                     previous_pos = ()
                     previous_timestamp = None
                     next_pos = ()
@@ -56,18 +57,25 @@ class EntityUpdater:
                         next_pos = (working_buffer[i][1].entity.position.x, working_buffer[i][1].entity.position.y)
                         next_timestamp = working_buffer[i][0]
                         i -= 1
+
                     if previous_pos != () and next_pos != ():
                         dist_x = (next_pos[0] - previous_pos[0])
+                        dist_y = (next_pos[1] - previous_pos[1])
                         delta_t = next_timestamp - previous_timestamp
                         if delta_t == 0:
                             print(f'ARRGHH HEIN ERREUR : delta_t dans entity_updater vaut 0 -> {next_timestamp}, {previous_timestamp}')
                             continue
 
+                        delta_y = (interpolate_timestamp - previous_timestamp) * dist_y / delta_t
                         delta_x = (interpolate_timestamp - previous_timestamp) * dist_x / delta_t
                         if delta_x < delta_x_max:
                             concerned_entity.position.x = previous_pos[0] + delta_x
+                        if delta_y < delta_y_max:
+                            concerned_entity.position.y = previous_pos[1] + delta_y
+
                     elif previous_pos != () and next_pos == ():
                         concerned_entity.position.x = previous_pos[0]
+                        concerned_entity.position.y = previous_pos[1]
 
                     while len(self.buffers[entity_uid]) > 0 and time.time_ns() - self.buffers[entity_uid][0][0] > TPS_TIME * 2:
                         self.buffers[entity_uid] = self.buffers[entity_uid][1:]

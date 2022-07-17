@@ -18,7 +18,7 @@ CHUNK_HEIGHT = 512
 
 class World(serializable.Serializable):
 
-    def __init__(self, size=8):
+    def __init__(self, size=64):
         self.entities = {}
         self.solid_bitmask = None
         self.size = size  # en nombre de chunk

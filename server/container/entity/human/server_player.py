@@ -67,7 +67,7 @@ class ServerPlayer:
     def update_player(self, world_size):
         timestep = self.clock.time_step()
 
-        if self.gravity[0] and False:
+        if self.gravity[0]:
             self.player.acceleration += self.gravity[1] * (timestep / (1_000_000_000 / self.__server_tps))
 
         self.player.velocity += self.player.acceleration
