@@ -36,7 +36,7 @@ class ServerPlayer:
             acceleration = velocity - snapshot['velocity']
             position += self.last_pos(snapshot['timestamp'] - last_timestamp, velocity + acceleration)
         
-        print(f'PREDICTED : {position}, ACTUAL : {self.player.position}')
+        return position
 
     def update_player_action(self, data):
         em_packets = []
@@ -46,16 +46,20 @@ class ServerPlayer:
             if action['action'] == key_action.ACTION_DOWN:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(1, 0)
-                    self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(1, 0))   
+                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(1, 0))  
 
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(-1, 0)
+                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(-1, 0))
+
                 elif action['key'] == key_action.KEY_JUMP:
                     self.player.acceleration += Vector2(0, 0.01)
+                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(0, 0.01))
 
             elif action['action'] == key_action.ACTION_UP:
                 if action['key'] == key_action.KEY_RIGHT:
                     self.player.acceleration += Vector2(-1, 0)
+                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(-1, 0))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]
@@ -63,6 +67,7 @@ class ServerPlayer:
 
                 elif action['key'] == key_action.KEY_LEFT:
                     self.player.acceleration += Vector2(1, 0)
+                    self.player.position = self.simulate_snapshots(self.past.find_timestamps(data['timestamp']), Vector2(1, 0))
 
                     em_action = entity_move_action.EntityMoveAction(self.player)
                     em_action.timestamp = data["timestamp"]

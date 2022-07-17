@@ -24,7 +24,7 @@ import utils.clock as clock
 
 import world.world as world
 
-SERVER_TPS = 60
+SERVER_TPS = 20
 
 
 class Server:

@@ -27,9 +27,9 @@ class PastBuffer(SizedList):
 
         snapshots = []
         for past_snapshot in self.list:
-            snapshots.append(past_snapshot)
             if past_snapshot['timestamp'] == timestamps:
                 break
+            snapshots.append(past_snapshot)
 
         snapshots.reverse()
             
